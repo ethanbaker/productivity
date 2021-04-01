@@ -1,0 +1,272 @@
+/* Header */
+header {
+  z-index: 99999999999999999;
+  position: sticky;
+  background-color: var(--bg-color);
+  border-bottom: solid 2px var(--text-color);
+  top: 0;
+  height: 7vh;
+  padding-top: 1vh;
+  width: 100%;
+}
+
+/* Large Nav */
+.large nav {
+  font-size: .85em;
+  font-weight: 750;
+  letter-spacing: .1em;
+  line-height: 4em;
+  text-decoration: none;
+  overflow: hidden;
+  display: flex;
+}
+
+.large .nav-left a {
+  color: var(--text-color);
+  text-transform: uppercase;
+  font-size: 1.6em;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-decoration: none;
+  padding: 2em;
+}
+
+.large .nav-right {
+  position: absolute;
+  right: .5em;
+  font-family: 'Raleway', Arial, sans-serif;
+}
+
+.large .nav-right a {
+  text-align: center;
+  color: var(--text-color);
+  text-decoration: none;
+  padding: 0 1.6em 0 1.6em;
+}
+
+.large .nav-list {
+  position: relative;
+  display: block;
+  left: 0;
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+}
+
+.large .nav-item {
+  text-decoration: none;
+  display: inline-block;
+  margin-left: 1.5em;
+  position: relative;
+  cursor: default;
+}
+
+.large .nav-item a {
+  cursor: pointer;
+}
+
+.large .nav-item a:hover {
+  color: var(--hover-color);
+}
+
+.large .nav-button {
+  text-decoration: none;
+  display: inline-block;
+  position: relative;
+  cursor: default;
+}
+
+.large .mode-button {
+  margin: 2.5em;
+  border: solid 6px var(--text-color);
+  background-color: var(--bg-color);
+  cursor: pointer;
+}
+
+/* Small Nav */
+#small-nav {
+  height: 100%;
+  width: 100%;
+  opacity: 1;
+  font-size: 0.85em;
+  font-weight: bold;
+  line-height: 4em;
+  text-decoration: none;
+  overflow: hidden;
+  background-color: var(--bg-color);
+  left: 0;
+}
+
+#small-nav a {
+  color: var(--text-color);
+  font-size: 1.35em;
+  text-decoration: none;
+  position: absolute;
+  left: 1em;
+}
+
+#small-nav button {
+  position: absolute;
+  right: 0.75em;
+  padding: 0.4em 0.7em 0.3em 0.7em;
+}
+
+#small-nav .open {
+  background-color: var(--bg-color);
+  border: solid 2px var(--text-color);
+  color: var(--text-color);
+  visibility: visible;
+  border-radius: 3px;
+  font-size: 1.75em;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+#small-nav .open:after {
+  font-family: FontAwesome;
+  font-style: normal;
+  font-weight: normal;
+  content: ' \f0c9';
+}
+
+#small-nav .open:hover {
+  background-color: rgba(255, 255, 255, 0);
+}
+
+#small-nav .open:active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+#small-menu .close {
+  background-color: var(--bg-color);
+  border: solid 2px var(--text-color);
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 1em;
+  border-radius: 50%;
+  width: 2em;
+  height: 2em;
+  text-align: center;
+}
+
+#small-menu .close:after {
+  font-family: FontAwesome;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 1em;
+  content: '\f00d';
+}
+
+#small-menu .close:focus {
+  outline: none;
+}
+
+#small-menu .close:active {
+  color: var(--hover-color);
+  transition: color 0s;
+  outline: none;
+}
+
+#small-menu {
+  opacity: 0;
+  display: none;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  transition: 0.5s;
+  background-color: var(--link-color);
+  overflow-x: hidden;
+}
+
+#small-menu nav {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 80%;
+  transition: 0.5s;
+}
+
+#small-menu .nav-item {
+  position: relative;
+  left: 0;
+  width: 100%;
+  padding-bottom: 1.2em;
+}
+
+#small-menu .nav-item a {
+  text-decoration: none;
+  color: var(--text-color);
+  transition: 0.3s;
+  font-size: 1.8em;
+}
+
+#small-menu .nav-item a:hover {
+  transform: color 0.5s;
+  background-color: var(--hover-color);
+  opacity: 0.7em;
+}
+
+#small-menu .mode-button {
+  padding: 0.5em 1.5em 0.5em 1.5em;
+  margin-bottom: 2em;
+  border: solid 6px var(--text-color);
+  background-color: var(--bg-color);
+  cursor: pointer;
+}
+
+/* Breakpoints */
+@media only screen and (max-width: 1110px) { /* Small Devices */
+  /* Body */
+  .large {
+    display: none;
+    opacity: 0;
+    visibility: collapse;
+    z-index: -1;
+    height: 0;
+    cursor: default;
+  }
+}
+
+@media only screen and (min-width: 1111px) { /* Large Devices */
+  /* Body */
+  .small {
+    display: none;
+    opacity: 0;
+    visibility: collapse;
+    z-index: -1;
+    height: 0;
+    cursor: default;
+  }
+}
+
+/* Breakpoints */
+/*
+@media only screen and (max-width: 850px) { 
+  .large {
+    display: none;
+    opacity: 0;
+    visibility: collapse;
+    z-index: -1;
+    height: 0;
+    cursor: default;
+  }
+}
+
+@media only screen and (min-width: 851px) { 
+  .small {
+    display: none;
+    opacity: 0;
+    visibility: collapse;
+    z-index: -1;
+    height: 0;
+    cursor: default;
+  }
+}
+*/

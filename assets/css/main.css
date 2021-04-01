@@ -1,0 +1,271 @@
+/* Import Fonts */
+@import url(/assets/css/font-awesome.min.css);
+
+
+/* Used for dark/light mode */
+::root {
+  --bg-color: #292929;
+  --text-color: #eeeeee;
+  --hover-color: #ff4400;
+}
+
+/* Used for scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--line-color);
+  border-radius: 10px; 
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--link-color);
+} 
+/* Body */
+body {
+  overflow-x: hidden;
+  overflow-y: hidden;
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-size: 2.4em;
+  font-family: Verdana, "Noto Sans",  sans-serif;
+}
+
+h4 {
+  margin: 2em auto 0.6em 0;
+  border-bottom: solid 2px rgb(130, 130, 130);
+  font-size: 2.2em;
+  width: 100%;
+  text-align: left;
+}
+
+/* Paragraphs */
+p {
+  margin: auto;
+  max-width: 70vw;
+  font-size: 1.4em;
+}
+
+/* Hyperlinks */
+a, .unselectable {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+p a {
+  text-decoration: none;
+  color: var(--text-color);
+  border-bottom: solid 2px grey;
+}
+
+/* Buttons */
+button {
+  text-decoration: none;
+  transition: 0.4s;
+  font-family: 'Raleway', Arial, sans-serif;
+  width: auto;
+  padding: 0.7em 1.1em 0.7em 1.1em;
+  font-size: 1.5em;
+}
+
+.color-button {
+  border: solid 2px var(--text-color);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin: 3em;
+  transition: background-color 0.6s;
+}
+
+.color-button:hover {
+  background-color: rgba(175, 175, 175);
+}
+
+.clear-button {
+  background: linear-gradient(90deg, rgba(225, 225, 225, 0.05), rgba(255, 255, 255, 0.05));
+  border: solid 2px rgba(255, 255, 255, 0.2);
+}
+
+.clear-button:hover {
+  background: linear-gradient(90deg, rgba(175, 175, 175, 0.25), rgba(205, 205, 205, 0.25));
+  border: solid 2px rgba(255, 255, 255, 0.2);
+}
+
+/* Nav */
+nav {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  width: 8vw;
+  height: 100%;
+  border-right: solid 2px var(--text-color);
+}
+
+.nav-item {
+  padding: 1em 0 1em 0;
+  font-size: 2.7em;
+}
+
+.nav-item a {
+  text-decoration: none;
+  color: var(--text-color);
+  padding: 0.25em;
+  border: solid 2px rgba(0, 0, 0, 0);
+}
+
+.nav-item a:hover {
+  border: solid 2px var(--link-color);
+}
+
+.nav-item .home {
+  border: solid 2px var(--text-color);
+}
+
+.nav-item .home:after {
+  content: '\f015'; 
+}
+
+.nav-item .todo:after {
+  content: '\f0cb';
+}
+
+.nav-item .calendar:after {
+  content: '\f073';
+}
+
+
+#mode-button {
+  text-decoration: none;
+  display: inline-block;
+  position: relative;
+  cursor: default;
+  padding: 1em;
+  margin-top: 2.7em;
+  border: solid 6px var(--text-color);
+  background-color: var(--bg-color);
+  cursor: pointer;
+}
+
+/* Main */
+main {
+  position: absolute;
+  top: 0;
+  left: 8vw;
+  padding-left: 2em;
+  height: 100%;
+  width: 100%;
+}
+
+.title {
+  top: 0;
+  font-size: 3.2em; 
+  margin-bottom: 0.4em;
+}
+
+/* Todo Wiget */
+main .todo {
+  width: 25vw;
+  height: 50vh;
+  padding-right: 5vw;
+  padding-bottom: 5vh;
+}
+
+.todo-nav-item {
+  color: var(--text-color);
+  background-color: var(--line-color);
+  border: solid 2px var(--link-color);
+  margin: 0.2em;
+}
+
+.todo-nav-item:hover {
+  border: solid 2px var(--hover-color);
+  color: var(--hover-color);
+}
+
+.todo-info {
+  margin-top: 2em;
+  padding-right: 0.4em;
+  border: solid 2px var(--line-color);
+  height: 65%;
+  overflow: auto;
+}
+
+.todo-info ul li {
+  padding-bottom: 1.4em; 
+  font-size: 1.15em;
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  color: var(--text-color);
+}
+
+.todo-info ul li:hover {
+  color: var(--hover-color);
+  text-decoration: line-through;
+}
+
+/* Footer */
+footer {
+  z-index: -1;
+  position: relative;
+  left: 0;
+  right: 0;
+  bottom: 1vh;
+  color: #808080;
+  margin-top: 5vh;
+}
+
+footer ul {
+  padding-top: 1.8em;
+  list-style-type: none;
+  margin: 0;
+}
+
+footer ul li {
+  display: inline;
+  margin: 0;
+  padding-right: 1.5em;
+}
+
+footer .content:before {
+  content: '|';
+  font-weight: bold;
+  padding-right: 1.5em;
+}
+
+/* Breakpoints */
+@media only screen and (max-width: 400px) {
+  p {
+    max-width: 95vw;
+  }
+
+  .title {
+    font-size: 1.6em;
+  }
+}
+
+@media only screen and (min-width: 401px) and (max-width: 850px) {
+  p {
+    max-width: 80vw;
+  }
+}
+
+@media only screen and (min-width: 851px) {
+}
