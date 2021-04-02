@@ -10,9 +10,9 @@
   </head>
   <body>
     <nav id=menu>
-      <div class=nav-item><a class="fa home" href="/index.html"></a></div>
-      <div class=nav-item><a class="fa todo" href="/todo/index.html"></a></div>
-      <div class=nav-item><a class="fa calendar" href="/calendar/index.html"></a></div>
+      <div class=nav-item><a class=home href="/index.html"></a></div>
+      <div class=nav-item><a class=todo href="/todo/index.html"></a></div>
+      <div class=nav-item><a class=calendar href="/calendar/index.html"></a></div>
       <!--<div class=nav-item><a id= href="/"></a></div>-->
 
       <a id=mode-button onclick=toggleMode()></a>
@@ -22,25 +22,181 @@
       <section class=todo>
         <h2 class=title>TODO</h2>
         <div class=todo-nav>
-          <button class=todo-nav-item>Work</button>
-          <button class=todo-nav-item>Personal</button>
+          <button id=work class=wiget-nav-button>Work</button>
+          <button id=personal class=wiget-nav-button>Personal</button>
         </div>
 
         <div class=todo-info>
           <!-- Filler to demonstrate API information -->
-          <ul>
-            <li>Spanish Assignments</li>
-            <li>AP CSA Module One Test</li>
-            <li>Art Final Project</li>
-            <li>Chemistry Chapter Nine Problems</li>
-            <li>History Assignment</li>
-            <li>Physics Lab Inquiry</li>
-            <li>Calculus Derivatives Worksheet</li>
-            <li>AP Bubble Party</li>
-            <li>Seminar Survey</li>
-            <li>Leadership Seminar Activity</li>
+          <ul id=work-list>
+            <li class=item onclick=removeTodoItem(this)>Spanish Assignments</li>
+            <li class=item onclick=removeTodoItem(this)>AP CSA Module One Test</li>
+            <li class=item onclick=removeTodoItem(this)>Art Final Project</li>
+            <li class=item onclick=removeTodoItem(this)>Chemistry Chapter Nine Problems</li>
+            <li class=item onclick=removeTodoItem(this)>History Assignment</li>
+            <li class=item onclick=removeTodoItem(this)>Physics Lab Inquiry</li>
+            <li class=item onclick=removeTodoItem(this)>Calculus Derivatives Worksheet</li>
+            <li class=item onclick=removeTodoItem(this)>AP Bubble Party</li>
+            <li class=item onclick=removeTodoItem(this)>Seminar Survey</li>
+            <li class=item onclick=removeTodoItem(this)>Leadership Seminar Activity</li>
+          </ul>
+
+          <ul id=personal-list>
+            <li class=item onclick=removeTodoItem(this)>Github configuration</li>
+            <li class=item onclick=removeTodoItem(this)>Laundry</li>
+            <li class=item onclick=removeTodoItem(this)>Clean Car</li>
           </ul>
         </div>
+
+        <div class=todo-utils>
+          <button id=undo class=wiget-nav-button></button>
+          <button id=add class=wiget-nav-button></button>
+        </div>
+      </section>
+
+      <section class=goals>
+        <h2 class=title>Goals</h2>
+
+        <!-- Filler to demonstrate API information -->
+        <ul class=goals-info>
+          <li class=item onclick=removeGoalsItem(this)>Finish reading Head First Go</li> <li class=item onclick=removeGoalsItem(this)>Deadlift 300lbs</li>
+          <li class=item onclick=removeGoalsItem(this)>Deadlift 300lbs</li>
+        </ul>
+
+        <div class=goals-utils>
+          <button id=undo class=wiget-nav-button></button>
+          <button id=add class=wiget-nav-button></button>
+        </div>
+      </section>
+
+      <section class=day>
+
+      </section>
+
+      <section class=habits>
+        <h2 class=title>Habits</h2>
+
+        <div class=habits-info>
+          <table>
+            <colgroup>
+              <col span=1 class=head>
+              <col span=1 class=item>
+              <col span=1 class=item>
+              <col span=1 class=item>
+              <col span=1 class=item>
+              <col span=1 class=item>
+              <col span=1 class=item>
+              <col span=1 class=item>
+              <col span=1 class=item>
+              <col span=1 class=item>
+              <col span=1 class=item>
+              <col span=1 class=item>
+              <col span=1 class=item>
+              <col span=1 class=item>
+            </colgroup>
+
+            <!-- Filler to demonstrate API information -->
+            <tbody>
+              <tr>
+                <th></th>
+                <th>4/1</th>
+                <th>4/2</th>
+                <th>4/3</th>
+                <th>4/4</th>
+                <th>4/5</th>
+                <th>4/6</th>
+                <th>4/7</th>
+                <th>4/8</th>
+                <th>4/9</th>
+                <th>4/10</th>
+                <th>4/11</th>
+                <th>4/12</th>
+                <th>4/13</th>
+                <th>4/14</th>
+                <th>4/15</th>
+              </tr>
+
+              <tr>
+                <td class=head>Dishwasher</td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+              </tr>
+
+              <tr>
+                <td class=head>Take Dogs on Walk</td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+              </tr>
+
+              <tr>
+                <td class=head>Journal</td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+              </tr>
+
+              <tr>
+                <td class=head>Tidy Room</td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+                <td class=item onclick=handleHabitCell(this)></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <button id=del class=wiget-nav-button></button>
+        <button id=add class=wiget-nav-button></button>
       </section>
     </main>
 

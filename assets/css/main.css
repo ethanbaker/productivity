@@ -109,6 +109,18 @@ button {
   border: solid 2px rgba(255, 255, 255, 0.2);
 }
 
+.wiget-nav-button {
+  color: var(--text-color);
+  background-color: var(--line-color);
+  border: solid 2px var(--link-color);
+  margin: 0.2em;
+}
+
+.wiget-nav-button:hover {
+  border: solid 2px var(--hover-color);
+  color: var(--hover-color);
+}
+
 /* Nav */
 nav {
   position: absolute;
@@ -141,14 +153,17 @@ nav {
 }
 
 .nav-item .home:after {
+  font-family: FontAwesome;
   content: '\f015'; 
 }
 
 .nav-item .todo:after {
+  font-family: FontAwesome;
   content: '\f0cb';
 }
 
 .nav-item .calendar:after {
+  font-family: FontAwesome;
   content: '\f073';
 }
 
@@ -178,34 +193,36 @@ main {
 .title {
   top: 0;
   font-size: 3.2em; 
-  margin-bottom: 0.4em;
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+  height: 5vh;
 }
 
-/* Todo Wiget */
+.hidden {
+  display: none;
+  visibility: none;
+  opacity: 0;
+  z-index: -1;
+  height: 0;
+}
+
+/* Todo wiget */
 main .todo {
+  position: absolute;
   width: 25vw;
   height: 50vh;
-  padding-right: 5vw;
-  padding-bottom: 5vh;
 }
 
-.todo-nav-item {
-  color: var(--text-color);
-  background-color: var(--line-color);
-  border: solid 2px var(--link-color);
-  margin: 0.2em;
+.todo-nav {
+  height: 5vh;
 }
 
-.todo-nav-item:hover {
-  border: solid 2px var(--hover-color);
-  color: var(--hover-color);
-}
 
 .todo-info {
-  margin-top: 2em;
+  margin-top: 4vh;
   padding-right: 0.4em;
   border: solid 2px var(--line-color);
-  height: 65%;
+  height: 30vh;
   overflow: auto;
 }
 
@@ -214,6 +231,7 @@ main .todo {
   font-size: 1.15em;
   font-family: Verdana, "Noto Sans",  sans-serif;
   color: var(--text-color);
+  cursor: pointer;
 }
 
 .todo-info ul li:hover {
@@ -221,15 +239,219 @@ main .todo {
   text-decoration: line-through;
 }
 
+.todo-info ul input {
+  width: 80%;
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  font-size: 1em;
+  color: var(--text-color);
+  background-color: var(--line-color);
+  border: solid 2px var(--link-color);
+  padding: 0.2em;
+}
+
+.todo-utils #undo {
+  font-size: 1em;
+  float: left;
+  margin-left: 1em;
+  margin-top: 0.4em;
+}
+
+.todo-utils #undo:after {
+  font-family: FontAwesome;
+  content: '\f0e2';
+}
+
+.todo-utils #add {
+  font-size: 1em;
+  float: right;
+  margin-right: 1em;
+  margin-top: 0.4em;
+}
+
+.todo-utils #add:after {
+  font-family: FontAwesome;
+  content: '\f067';
+}
+
+/* Goals wiget */
+main .goals {
+  position: absolute;
+  top: 55vh;
+  left: 2em;
+  width: 25vw;
+  height: 40vh;
+}
+
+.goals-info {
+  height: 26vh;
+  overflow: auto;
+  padding-right: 0.4em;
+  padding-top: 1em;
+  margin: 0;
+  border: solid 2px var(--line-color);
+}
+
+.goals-info li {
+  padding-bottom: 1.4em; 
+  font-size: 1.15em;
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.goals-info li:hover {
+  color: var(--hover-color);
+  text-decoration: line-through;
+}
+
+.goals-info input {
+  width: 80%;
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  font-size: 1em;
+  color: var(--text-color);
+  background-color: var(--line-color);
+  border: solid 2px var(--link-color);
+  padding: 0.2em;
+}
+
+.goals-utils {
+  height: 3vh;
+}
+
+.goals-utils #undo {
+  font-size: 1em;
+  float: left;
+  margin-left: 1em;
+  margin-top: 0.4em;
+}
+
+.goals-utils #undo:after {
+  font-family: FontAwesome;
+  content: '\f0e2';
+}
+
+.goals-utils #add {
+  font-size: 1em;
+  float: right;
+  margin-right: 1em;
+  margin-top: 0.4em;
+}
+
+.goals-utils #add:after {
+  font-family: FontAwesome;
+  content: '\f067';
+}
+
+/* Day wiget */
+main .day {
+  position: absolute;
+  left: 30vw;
+  top: 0;
+  width: 60vw;
+  height: 50vh;
+  border: solid 2px red;
+}
+
+/* Habits wiget */
+main .habits {
+  position: absolute;
+  top: 55vh;
+  left: 30vw;
+  height: 40vh;
+  width: 35vw;
+}
+
+.habits-info {
+  height: 26vh;
+  overflow: auto;
+  border: solid 2px var(--line-color);
+  padding: 0.4em;
+}
+
+.habits-info table {
+  border-spacing: 0.2em;
+  text-align: center;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.habits-info th {
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  width: 2.5em;
+}
+
+.habits-info .head {
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  font-weight: bold;
+  padding-right: 0.4em;
+  width: 6em;
+}
+
+.habits-info tr {
+  height: 2.3em;
+}
+
+.habits-info tr .item {
+  border: solid 2px var(--line-color);
+  height: 2.3em;
+  width: 2.3em;
+  white-space: nowrap;
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.habits-info input {
+  margin-top: 0.4em;
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  font-size: 1em;
+  color: var(--text-color);
+  background-color: var(--line-color);
+  border: solid 2px var(--link-color);
+  padding: 0.2em;
+}
+
+.habits #add {
+  float: right;
+  font-size: 1em;
+  margin-right: 1em;
+  margin-top: 1em;
+}
+
+.habits #add:after {
+  font-family: FontAwesome;
+  content: '\f067';
+}
+
+.habits #del {
+  float: left;
+  font-size: 1em;
+  margin-top: 1em;
+  margin-left: 1em;
+}
+
+.habits #del:after {
+  font-family: FontAwesome;
+  content: '\f1f8';
+}
+
+.habits .delete {
+  text-decoration: line-through;
+  cursor: pointer;
+}
+
+.habits .delete:hover {
+  color: var(--hover-color);
+}
+
 /* Footer */
 footer {
   z-index: -1;
-  position: relative;
-  left: 0;
-  right: 0;
+  position: absolute;
+  text-align: center;
+  width: 100%;
   bottom: 1vh;
   color: #808080;
-  margin-top: 5vh;
 }
 
 footer ul {
