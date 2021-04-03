@@ -70,7 +70,60 @@
       </section>
 
       <section class=day>
+        <h2 id=date class=title></h2>
 
+        <div class=day-ambient>
+          <p id=time></p>
+          <p id=weather></p>
+        </div>
+
+        <div class=day-info>
+
+        </div>
+
+        <div class=schedule>
+          <h2 class=title>Schedule</h2>
+
+          <div class=schedule-info>
+            <ul class=schedule-times>
+              <li class=time>7:00 AM</li>
+              <li class=item><strong>7:30 AM:</strong> Eat breakfast</li>
+              <li class=time>8:00 AM</li>
+              <li class=time>9:00 AM</li> 
+              <li class=time>10:00 AM</li> 
+              <li class=time>11:00 AM</li> 
+              <li class=time>12:00 PM</li> 
+              <li class=time>1:00 PM</li> 
+              <li class=time>2:00 PM</li> 
+              <li class=time>3:00 PM</li> 
+              <li class=time>4:00 PM</li> 
+              <li class=time>5:00 PM</li> 
+              <li class=time>6:00 PM</li> 
+              <li class=time>7:00 PM</li> 
+              <li class=time>8:00 PM</li> 
+              <li class=time>9:00 PM</li> 
+              <li class=time>10:00 PM</li> 
+              <li class=time>11:00 PM</li> 
+              <li class=time>12:00 AM</li> 
+            </ul>
+
+            <div class="input hidden">
+              <button id=escape class=wiget-nav-button></button>
+
+              <label>Time:</label><br>
+              <input id=time type=time><br>
+
+              <label>Name:</label><br>
+              <textarea id=name type=text></textarea><br>
+
+              <button id=submit class=wiget-nav-button onclick=scheduleNewEvent()>Done</button></div>
+          </div>
+          <div class=schedule-utils>
+            <button id=del class=wiget-nav-button></button>
+            <button id=add class=wiget-nav-button></button>
+          </div>
+
+        </div>
       </section>
 
       <section class=habits>

@@ -349,16 +349,166 @@ main .day {
   top: 0;
   width: 60vw;
   height: 50vh;
-  border: solid 2px red;
+}
+
+.day #date {
+  text-decoration: underline;
+}
+
+.day-ambient {
+  margin-top: 3vh;
+  height: 10vh;
+  width: 12vw;
+  position: absolute;
+  right: 2vw;
+}
+
+.day #time {
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  font-size: 2em;
+  font-weight: bold;
+}
+
+.day #weather {
+  padding-top: 0.8em;
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  font-size: 1.4em;
+}
+
+.day .schedule {
+  width: 25vw;
+  height: 80vh;
+  position: absolute;
+  top: 10vh;
+}
+
+.schedule .title {
+  font-size: 2em;
+  margin-top: 0;
+}
+
+.schedule-info {
+  height: 74vh;
+  width: 24vw;
+}
+
+.schedule-info ul {
+  border: solid 2px var(--line-color);
+  list-style: none;
+  padding: 0;
+  position: absolute;
+  left: 1vw;
+  top: 4vh;
+  width: 23vw;
+  height: 74vh;
+  overflow: auto;
+  cursor: default;
+}
+
+.schedule-info ul .time {
+  text-align: left;
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  border-bottom: solid 2px var(--line-color);
+  margin-top: 1.8em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
+
+.schedule-info ul .time:before {
+  content: '\0336';
+  color: var(--line-color);
+  display: inline-block;
+  width: 1em;
+  font-size: 1.7em;
+}
+
+.schedule-info ul .item {
+  text-align: left;
+  margin-left: 0.5em;
+  font-family: Verdana, "Noto Sans",  sans-serif;
+}
+
+.schedule-info .input {
+  position: absolute;
+  top: 20vh;
+  right: 0;
+  background: var(--bg-color);
+  border: solid 2px var(--text-color);
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  font-size: 1em;
+  padding: 4vh;
+}
+
+.schedule-info .input label {
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  color: var(--text-color);
+  font-size: 1.4em;
+}
+
+.schedule-info .input #name {
+  height: 4em;
+  font-size: 1.4em;
+  color: var(--text-color);
+  background-color: var(--line-color);
+  border: solid 2px var(--link-color);
+  max-width: 95%;
+  padding: 0.2em;
+  margin-bottom: 2vh;
+}
+
+.schedule-info .input #time {
+  font-size: 1.4em;
+  color: var(--text-color);
+  background-color: var(--line-color);
+  border: solid 2px var(--link-color);
+  max-width: 95%;
+  padding: 0.2em;
+  margin-bottom: 2vh;
+}
+
+.schedule-info .input #escape {
+  position: absolute;
+  right: 1vw;
+  top: 1vh;
+  font-size: 0.9em;
+}
+
+.schedule-info .input #escape:after {
+  font-family: FontAwesome;
+  content: '\f00d';
+}
+
+.schedule-utils #del {
+  font-size: 1em;
+  float: left;
+  margin-left: 1em;
+  margin-top: 0.4em;
+}
+
+.schedule-utils #del:after {
+  font-family: FontAwesome;
+  content: '\f1f8';
+}
+
+.schedule-utils #add {
+  font-size: 1em;
+  float: right;
+  margin-right: 1em;
+  margin-top: 0.4em;
+}
+
+.schedule-utils #add:after {
+  font-family: FontAwesome;
+  content: '\f067';
 }
 
 /* Habits wiget */
 main .habits {
   position: absolute;
   top: 55vh;
-  left: 30vw;
+  right: 12vw;
   height: 40vh;
-  width: 35vw;
+  width: 30vw;
 }
 
 .habits-info {
@@ -415,7 +565,7 @@ main .habits {
   float: right;
   font-size: 1em;
   margin-right: 1em;
-  margin-top: 1em;
+  margin-top: 0.4em;
 }
 
 .habits #add:after {
@@ -426,7 +576,7 @@ main .habits {
 .habits #del {
   float: left;
   font-size: 1em;
-  margin-top: 1em;
+  margin-top: 0.4em;
   margin-left: 1em;
 }
 

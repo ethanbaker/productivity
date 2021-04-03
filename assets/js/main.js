@@ -1,3 +1,18 @@
+// Get the credentials for various apis
+let xml = new XMLHttpRequest()
+let url = "/assets/credentials.json"
+
+// Set the credentials equal to something when the xml response comes back
+let credentials
+xml.responseType = "json"
+xml.onload = () => {
+  credentials = xml.response
+}
+
+// Open and send the xml request
+xml.open("GET", url)
+xml.send()
+
 /*
 // Small navigation menu ---------
 
@@ -241,6 +256,140 @@ const delGoalsInput = () => {
   }
 }
 
+// Day Wiget ------------------
+
+// Set the title of the wiget to the date
+let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+let days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+let prefixes = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"]
+
+let date = new Date()
+document.querySelector(".day .title").innerText = `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}${prefixes[date.getDate()%10]}, ${date.getFullYear()}`
+
+// Update the time in the wiget
+const setTime = () => {
+  let now = new Date()
+  let h = now.getHours()
+  let m = now.getMinutes()
+  let p = " AM"
+
+  if (h >= 12) {
+    if (h > 12) h -= 12
+   
+    p = " PM"
+  } else if (h === 0) {
+    h = 12
+  }
+  if (m < 10) {
+    m = "0" + m
+  }
+
+  document.querySelector(".day #time").innerText = `${h}:${m} ${p}`
+}
+
+setInterval(setTime(), 1000)
+setTime()
+
+// Update the weather in the wiget
+const setWeather = async () => {
+  // Get the ip of the user
+  const ipRaw = await fetch("https://api.ipify.org/?format=json")
+  const ip = await ipRaw.json()
+
+  // Get the location of the user
+  const posRaw = await fetch(`https://ipapi.co/${ip.ip}/json`)
+  const pos = await posRaw.json()
+
+  // Get the weather data
+  const weatherRaw = await fetch(`https://api.openweathermap.org/data/2.5/weather?zip=${pos.postal}&APPID=${credentials.weather.key}`)
+  const weather = await weatherRaw.json()
+
+  // Update the weather div
+  document.querySelector(".day #weather").innerHTML = `${Math.floor((weather.main.temp - 273.15) * (9/5) + 32)} °F. ${weather.weather[0].description[0].toUpperCase() + weather.weather[0].description.substring(1)} <br><img src="http://openweathermap.org/img/wn/${weather.weather[0].icon}.png" />`
+}
+
+setInterval(setWeather(), 900000)
+setWeather()
+
+// Schedule stuff
+let scheduleAdd = document.querySelector(".schedule #add")
+let scheduleDel = document.querySelector(".schedule #del")
+let scheduleEsc = document.querySelector(".schedule #escape")
+let scheduleList = document.querySelector(".schedule ul")
+let scheduleInfo = document.querySelector(".schedule-info")
+let scheduleInput = document.querySelector(".schedule-info .input")
+
+const openEventMenu = () => {
+  scheduleList.style.filter = "blur(2px)"
+  scheduleInput.className = "input"
+}
+
+const closeEventMenu = () => {
+  scheduleList.style.filter = ""
+  scheduleInput.className = "input hidden"
+
+  scheduleInput.querySelector("#time").value = ""
+  scheduleInput.querySelector("#name").value = ""
+}
+
+scheduleAdd.onclick = openEventMenu
+scheduleEsc.onclick = closeEventMenu
+
+const scheduleNewEvent = () => {
+  let time = scheduleInput.querySelector("#time").value
+  let name = scheduleInput.querySelector("#name").value
+
+  closeEventMenu()
+
+  let timeSplits = time.split(":")
+
+  let suffix = " AM"
+  let minute = timeSplits[1]
+  let hour = timeSplits[0]
+
+  if (timeSplits[0] >= 12) {
+    suffix = " PM"
+    if (timeSplits[0] > 12) {
+      hour -= 12
+    }
+  } else if (timeSplits[0] === "00") {
+    hour = 12
+  } else {
+    hour = hour[1]
+  }
+
+  let timeString = `${hour}:${minute}${suffix}`
+
+  // Declare a new element
+  let li = document.createElement("LI")
+  li.innerHTML = `<strong>${timeString}:</strong> ${name}`
+  li.className = "item"
+
+  // Insert the element in specified hours
+  for (let time of scheduleInfo.querySelectorAll("li")) {
+    if (time.innerText.split(":")[0] == hour && time.innerText.split(" ")[1][0] == suffix[1] && minute-time.innerText.split(":")[1].substring(0, 2) >= 0) {
+      time.insertAdjacentElement("afterend", li)
+    }
+  }
+
+  // Insert the element if it is not in the specified hours
+  if (suffix === " AM" && hour < 7) {
+    li.className += " pre-times"
+    for (let time of scheduleInfo.querySelectorAll(".pre-times")) {
+      console.log(hour-time.innerText.split(":")[0] > 0, minute-time.innerText.split(":")[1].substring(0, 2) >= 0)
+      if (hour-time.innerText.split(":")[0] > 0 && minute-time.innerText.split(":")[1].substring(0, 2) >= 0) {
+        time.insertAdjacentElement("afterend", li)
+        return
+      }
+    }
+    if (scheduleInfo.querySelector(".pre-times")) {
+      scheduleInfo.querySelector(".pre-times").insertAdjacentElement("beforebegin", li)
+    } else {
+      scheduleInfo.querySelector(".time").insertAdjacentElement("beforebegin", li)
+    }
+  }
+}
+
 // Habits Wiget ----------------
 let habitsInfo = document.querySelector(".habits-info")
 let habitsAdd = document.querySelector(".habits #add")
@@ -284,8 +433,7 @@ habitsAdd.onclick = () => {
   let input = habitsInfo.querySelector("input")
   input.focus()
   input.onkeypress = e => {
-    if (!e) e = window.event
-
+    if (!e) e = window.event 
     if (e.key === "Enter") {
       let val = input.value
       // Blur the input (which will delete it)
