@@ -1,6 +1,6 @@
 /* Import Fonts */
 @import url(/assets/css/font-awesome.min.css);
-
+@import url('https://fonts.googleapis.com/css?family=Orbitron&display=swap'); 
 
 /* Used for dark/light mode */
 ::root {
@@ -217,6 +217,14 @@ main .todo {
   height: 5vh;
 }
 
+.todo-nav button {
+  font-size: 1.3em;
+  padding: 0.7em;
+}
+
+.todo-nav #work {
+  margin-right: 2vw;
+}
 
 .todo-info {
   margin-top: 4vh;
@@ -356,16 +364,18 @@ main .day {
 }
 
 .day-ambient {
-  margin-top: 3vh;
+  display: flex;
+  flex-direction: row;
+  margin-top: 2vh;
   height: 10vh;
-  width: 12vw;
+  width: 35vw;
   position: absolute;
-  right: 2vw;
+  right: 0;
 }
 
 .day #time {
-  font-family: Verdana, "Noto Sans",  sans-serif;
-  font-size: 2em;
+  font-family: Orbitron, Arial, serif;
+  font-size: 2.3em;
   font-weight: bold;
 }
 
@@ -373,6 +383,103 @@ main .day {
   padding-top: 0.8em;
   font-family: Verdana, "Noto Sans",  sans-serif;
   font-size: 1.4em;
+}
+
+.day .motivation {
+  position: absolute;
+  right: 0;
+  top: 20vh;
+  width: 30vw;
+  height: 32vh;
+}
+
+.motivation .title {
+  font-size: 2em;
+  margin-bottom: 0;
+}
+
+.motivation .motivation-info {
+  height: 26vh;
+  width: 30vw;
+  border: solid 2px var(--line-color);
+}
+
+.motivation p {
+  margin-top: 3vh;
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  font-size: 1.4em; 
+  color: var(--text-color);
+}
+
+.motivation textarea {
+  width: 20vw;
+  height: 13vh;
+  font-family: Verdana, "Noto Sans",  sans-serif;
+  font-size: 1.2em;
+  line-height: 1.35em;
+  color: var(--text-color);
+  background-color: var(--line-color);
+  border: solid 2px var(--link-color);
+  padding: 0.2em;
+  margin-top: 1em;
+}
+
+.motivation #targets p {
+  margin-top: 1vh;
+}
+
+.motivation #targets textarea {
+  height: 3.5vh;
+  padding: 0.25vh;
+}
+
+.motivation .motivation-slide-icons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 8vw;
+  height: 2vh;
+}
+
+.motivation-slide-icons .icon:after {
+  padding: 0.4em;
+}
+
+.motivation-slide-icons .icon:after {
+  content: '\2022';
+}
+
+.motivation-slide-icons .selected {
+  color: var(--hover-color);
+}
+
+.motivation #prev {
+  font-size: 0.6em;
+  position: absolute;
+  left: 0;
+  top: 19vh;
+  margin-left: 0.75vw;
+}
+
+.motivation #prev:after {
+  font-family: FontAwesome;
+  content: '\f053';
+}
+
+.motivation #next {
+  font-size: 0.6em;
+  position: absolute;
+  right: 0;
+  top: 19vh;
+  margin-right: 0.5vw;
+}
+
+.motivation #next:after {
+  font-family: FontAwesome;
+  content: '\f054';
 }
 
 .day .schedule {
@@ -476,6 +583,15 @@ main .day {
 .schedule-info .input #escape:after {
   font-family: FontAwesome;
   content: '\f00d';
+}
+
+.schedule-times .delete {
+  text-decoration: line-through;
+  cursor: pointer;
+}
+
+.schedule-times .delete:hover {
+  color: var(--hover-color);
 }
 
 .schedule-utils #del {

@@ -354,7 +354,7 @@ const scheduleNewEvent = () => {
     }
   } else if (timeSplits[0] === "00") {
     hour = 12
-  } else {
+  } else if (timeSplits[0] < 10) {
     hour = hour[1]
   }
 
@@ -387,8 +387,68 @@ const scheduleNewEvent = () => {
     } else {
       scheduleInfo.querySelector(".time").insertAdjacentElement("beforebegin", li)
     }
+    //TODO send info to api
   }
 }
+
+let scheduleDeleteMode = false
+scheduleDel.onclick = () => {
+  if (!scheduleDeleteMode) {
+    scheduleDeleteMode = true
+    for (let element of document.querySelectorAll(".schedule-times .item")) {
+      element.className = "item delete"
+      element.onclick = () => {
+        element.remove()
+        
+        //TODO send info to API
+      }
+    }
+  } else {
+    scheduleDeleteMode = false
+    for (let element of document.querySelectorAll(".schedule-times .item")) {
+      element.className = "item"
+      element.onclick = () => {}
+    }
+  }
+}
+
+// Motivation Wiget
+let motivationIcons = document.querySelectorAll(".motivation-slide-icons .icon")
+let motivationSlides = document.querySelectorAll(".motivation-info .slide")
+let motivationPrev = document.querySelector(".motivation-utils #prev")
+let motivationNext = document.querySelector(".motivation-utils #next")
+
+let motivationIndex = 0
+
+const motivationNextSlide = () => {
+  // Make the current slide hidden
+  motivationSlides[motivationIndex].className = "slide hidden"
+  motivationIcons[motivationIndex].className = "icon"
+
+  // Add one to the motivation index (or start the loop over)
+  motivationIndex++
+  if (motivationIndex === motivationSlides.length) motivationIndex = 0
+
+  // Make the next slide visible
+  motivationSlides[motivationIndex].className = "slide"
+  motivationIcons[motivationIndex].className = "icon selected"
+}
+motivationNext.onclick = motivationNextSlide
+
+const motivationPrevSlide = () => {
+  // Make the current slide hidden
+  motivationSlides[motivationIndex].className = "slide hidden"
+  motivationIcons[motivationIndex].className = "icon"
+
+  // Add one to the motivation index (or start the loop over)
+  motivationIndex--
+  if (motivationIndex === -1) motivationIndex = motivationSlides.length-1
+
+  // Make the next slide visible
+  motivationSlides[motivationIndex].className = "slide"
+  motivationIcons[motivationIndex].className = "icon selected"
+}
+motivationPrev.onclick = motivationPrevSlide
 
 // Habits Wiget ----------------
 let habitsInfo = document.querySelector(".habits-info")
@@ -416,6 +476,7 @@ const habitsDeleteModeHandler = () => {
     habitsDeleteMode = false
     for (let element of document.querySelectorAll(".habits tbody .head")) {
       element.className = "head"
+      element.onclick = () => {}
     }
   }
 }
