@@ -1,20 +1,45 @@
 // Get the credentials for various apis
-let xml = new XMLHttpRequest()
+let xml1 = new XMLHttpRequest()
 let url = "/assets/credentials.json"
 
-// Set the credentials equal to something when the xml response comes back
 let credentials
-xml.responseType = "json"
-xml.onload = () => {
-  credentials = xml.response
+xml1.responseType = "json"
+xml1.onload = () => {
+  credentials = xml1.response
 }
 
-// Open and send the xml request
-xml.open("GET", url)
-xml.send()
+xml1.open("GET", url)
+xml1.send()
+
+// Get the user's data from the productivity api. If the user has no data, create it for the user
+let xml2 = new XMLHttpRequest()
+url = "https://api.ethanbaker.dev/" + TOKEN
+
+let user 
+xml2.responseType = "json"
+xml2.onload = () => {
+  user = xml2.response
+
+  // Create a new user if the current user doesn't exist
+  if (!user) {
+    let xml3 = new XMLHttpRequest()
+    xml3.responseType = "json"
+    xml3.onload = () => {
+      user = xml3.response
+      updateUi()
+    }
+    xml3.open("POST", url)
+    xml3.send(TOKEN)
+  } else {
+    updateUi()
+  }
+}
+
+xml2.open("GET", url)
+xml2.send()
 
 /*
-// Small navigation menu ---------
+  // Small navigation menu ---------
 
 let wrap = document.querySelector("main")
 let menu = document.querySelector("#small-menu")
@@ -54,7 +79,44 @@ for (let v of links) {
 }
 */
 
-// Dark and light mode ----------
+/* HTML Elements */
+let html = document.querySelector("html")
+
+// Todo Wiget
+let todoInfo = document.querySelector(".todo-info")
+let todoList = document.querySelector(".todo-info #work-list")
+let todoUndo = document.querySelector(".todo #undo")
+let todoAdd = document.querySelector(".todo #add")
+let todoButtons = [document.querySelector(".todo-nav #work"), document.querySelector(".todo-nav #personal")]
+let todoLists = [document.querySelector(".todo-info #work-list"), document.querySelector(".todo-info #personal-list")]
+
+// Goals Wiget
+let goalsList = document.querySelector(".goals-info")
+let goalsUndo = document.querySelector(".goals-utils #undo")
+let goalsAdd = document.querySelector(".goals-utils #add")
+
+// Schedule Wiget
+let scheduleAdd = document.querySelector(".schedule #add")
+let scheduleDel = document.querySelector(".schedule #del")
+let scheduleEsc = document.querySelector(".schedule #escape")
+let scheduleList = document.querySelector(".schedule ul")
+let scheduleInfo = document.querySelector(".schedule-info")
+let scheduleInput = document.querySelector(".schedule-info .input")
+
+// Motivation Wiget
+let motivationIcons = document.querySelectorAll(".motivation-slide-icons .icon")
+let motivationSlides = document.querySelectorAll(".motivation-info .slide")
+let motivationPrev = document.querySelector(".motivation-utils #prev")
+let motivationNext = document.querySelector(".motivation-utils #next")
+let motivationSave = document.querySelector(".motivation #save")
+
+// Habits Wiget
+let habitsInfo = document.querySelector(".habits-info")
+let habitsAdd = document.querySelector(".habits #add")
+let habitsDel = document.querySelector(".habits #del")
+
+
+/* Dark and Light Mode */
 
 // Set the user's cache to the default one
 const defaultCache = () => {
@@ -75,7 +137,6 @@ const toggleMode = () => {
   cache.blog.mode === "light" ? setDark() : setLight()
 }
 
-let html = document.querySelector("html")
 
 // Set the screen to dark mode
 const setDark = () => {
@@ -106,63 +167,57 @@ let localCache = localStorage.getItem("ethanbaker.dev")
 let cache = localCache ? JSON.parse(localCache) : defaultCache()
 cache.blog.mode === "light" ? setLight() : setDark()
 
-// Todo Wiget ----------------
-let todoInfo = document.querySelector(".todo-info")
-let todoList = document.querySelector(".todo-info #work-list")
-let todoUndo = document.querySelector(".todo #undo")
-let todoAdd = document.querySelector(".todo #add")
-let todoWorkButton = document.querySelector(".todo-nav #work")
-let todoWorkList = document.querySelector(".todo-info #work-list")
-let todoPersonalButton = document.querySelector(".todo-nav #personal")
-let todoPersonalList = document.querySelector(".todo-info #personal-list")
+/* Todo Wiget */
+let todoRemoved = [[], []]
+let todoIndex = 0
 
-let personalRemoved = []
-let workRemoved = []
-let todoRemoved = workRemoved
+// Hide the personal list
+todoLists[1].className = "hidden"
 
-// Todo nav buttons
-todoPersonalList.className = "hidden"
+// Show the work list and hide the personal one
+todoButtons[0].onclick = () => {
+  todoIndex = 0
 
-// Hide the personal list and show the work one
-todoWorkButton.onclick = () => {
-  todoRemoved = workRemoved
-  todoList = todoWorkList
-
-  todoWorkList.className = ""
-  todoPersonalList.className = "hidden"
+  todoLists[0].className = ""
+  todoLists[1].className = "hidden"
 }
 
-// Hide the work list and show the personal list
-todoPersonalButton.onclick = () => {
-  todoRemoved = personalRemoved
-  todoList = todoPersonalList
+// Show the personal list and hide the work one
+todoButtons[1].onclick = () => {
+  todoIndex = 1
 
-  todoWorkList.className = "hidden"
-  todoPersonalList.className = ""
+  todoLists[0].className = "hidden"
+  todoLists[1].className = ""
 }
 
-// Delete parts of the list
+// Delete an item from a list
 const removeTodoItem = element => {
-  todoRemoved.push(element)
-  element.remove()
+  todoRemoved[todoIndex].push(element)
 
-  //TODO send deleted info to server API
+  let option = ["work", "personal"][todoIndex]
+  user.todo[option] = user.todo[option].filter(e => {return e !== element.innerText})
+  updateUser()
+
+  element.remove()
 }
 
-// Undo button
+// Todo undo button
 todoUndo.onclick = () => {
   if (todoRemoved.length === 0) return
 
-  todoList.appendChild(todoRemoved[todoRemoved.length-1])
-  todoRemoved.pop()
+  todoLists[todoIndex].appendChild(todoRemoved[todoIndex][todoRemoved[todoIndex].length-1])
+  let val = todoRemoved[todoIndex].pop()
 
-  //TODO send new element to server API for storage
+  // Update the user
+  let option = ["work", "personal"][todoIndex]
+  user.todo[option].push(val)
+  updateUser()
 }
 
-// Add button
+// Todo add button
 todoAdd.onclick = () => {
   // Add the input to the list and scroll so it's visible
-  todoList.innerHTML += "<li><input type=text id=todo-add onfocusout=delTodoInput()></li>"
+  todoLists[todoIndex].innerHTML += "<li><input type=text id=todo-add onfocusout=delTodoInput()></li>"
   todoInfo.scrollTop = todoInfo.scrollHeight
 
   // Find the input, focus it, and setup its onkeypress
@@ -172,14 +227,16 @@ todoAdd.onclick = () => {
     if (!e) e = window.event
 
     if (e.key === "Enter") {
-      let val = input.value
       // Blur the input (which will delete it)
       input.blur()
 
       // Add the new item to the list
-      todoList.innerHTML += `<li class=item onclick=removeTodoItem(this)>${val}</li>`
+      todoLists[todoIndex].innerHTML += `<li class=item onclick=removeTodoItem(this)>${input.value}</li>`
 
-      //TODO send new info to server API for storage
+      // Update the user
+      let option = ["work", "personal"][todoIndex]
+      user.todo[option].push(input.value)
+      updateUser()
     }
   }
 }
@@ -195,19 +252,17 @@ const delTodoInput = () => {
   }
 }
 
-// Goals wiget ------------
-let goalsList = document.querySelector(".goals-info")
-let goalsUndo = document.querySelector(".goals-utils #undo")
-let goalsAdd = document.querySelector(".goals-utils #add")
-
+/* Goals Wiget */
 let goalsRemoved = []
 
 // Delete parts of the list
 const removeGoalsItem = element => {
   goalsRemoved.push(element)
-  element.remove()
 
-  //TODO send deleted info to server API
+  user.goals = user.goals.filter(e => {return e !== element.innerText})
+  updateUser()
+
+  element.remove()
 }
 
 // Undo button
@@ -215,9 +270,10 @@ goalsUndo.onclick = () => {
   if (goalsRemoved.length === 0) return
 
   goalsList.appendChild(goalsRemoved[goalsRemoved.length-1])
-  goalsRemoved.pop()
+  let val = goalsRemoved.pop()
 
-  //TODO send new element to server API for storage
+  user.goals.push(val)
+  updateUser()
 }
 
 // Add button
@@ -233,14 +289,14 @@ goalsAdd.onclick = () => {
     if (!e) e = window.event
 
     if (e.key === "Enter") {
-      let val = input.value
       // Blur the input (which will delete it)
       input.blur()
 
       // Add the new item to the list
-      goalsList.innerHTML += `<li class=item onclick=removeGoalsItem(this)>${val}</li>`
+      goalsList.innerHTML += `<li class=item onclick=removeGoalsItem(this)>${input.value}</li>`
 
-      //TODO send new info to server API for storage
+      user.goals.push(input.value)
+      updateUser()
     }
   }
 }
@@ -260,10 +316,12 @@ const delGoalsInput = () => {
 
 // Set the title of the wiget to the date
 let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-let days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 let prefixes = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"]
 
 let date = new Date()
+let apiDate = `${date.getMonth()+1} ${date.getDate()} ${date.getFullYear()}`
+let leapYear = ((date.getFullYear() % 4 == 0) && (date.getFullYear() % 100 != 0)) || (date.getFullYear() % 400 == 0) ? 1 : 0
 document.querySelector(".day .title").innerText = `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}${prefixes[date.getDate()%10]}, ${date.getFullYear()}`
 
 // Update the time in the wiget
@@ -275,7 +333,7 @@ const setTime = () => {
 
   if (h >= 12) {
     if (h > 12) h -= 12
-   
+
     p = " PM"
   } else if (h === 0) {
     h = 12
@@ -305,20 +363,13 @@ const setWeather = async () => {
   const weather = await weatherRaw.json()
 
   // Update the weather div
-  document.querySelector(".day #weather").innerHTML = `${Math.floor((weather.main.temp - 273.15) * (9/5) + 32)} °F. ${weather.weather[0].description[0].toUpperCase() + weather.weather[0].description.substring(1)} <br><img src="http://openweathermap.org/img/wn/${weather.weather[0].icon}.png" />`
+  document.querySelector(".day #weather").innerHTML = `${Math.floor((weather.main.temp - 273.15) * (9/5) + 32)} °F. ${weather.weather[0].description[0].toUpperCase() + weather.weather[0].description.substring(1)} <br><img src="https://openweathermap.org/img/wn/${weather.weather[0].icon}.png" />`
 }
 
 setInterval(setWeather(), 900000)
 setWeather()
 
-// Schedule stuff
-let scheduleAdd = document.querySelector(".schedule #add")
-let scheduleDel = document.querySelector(".schedule #del")
-let scheduleEsc = document.querySelector(".schedule #escape")
-let scheduleList = document.querySelector(".schedule ul")
-let scheduleInfo = document.querySelector(".schedule-info")
-let scheduleInput = document.querySelector(".schedule-info .input")
-
+/* Schedule Wiget */
 const openEventMenu = () => {
   scheduleList.style.filter = "blur(2px)"
   scheduleInput.className = "input"
@@ -366,29 +417,56 @@ const scheduleNewEvent = () => {
   li.className = "item"
 
   // Insert the element in specified hours
+  let items = []
+
+  let item = {"time": timeString, "value": name}
+  items.push(item)
+
   for (let time of scheduleInfo.querySelectorAll("li")) {
     if (time.innerText.split(":")[0] == hour && time.innerText.split(" ")[1][0] == suffix[1] && minute-time.innerText.split(":")[1].substring(0, 2) >= 0) {
       time.insertAdjacentElement("afterend", li)
     }
+    if (time.className === "item") {
+      let a = time.innerText.split(":")
+
+      items.push({"time": (a[0] + ":" + a[1].split(" ")[0] + " " + a[1].split(" ")[1]), "value": a[2]})
+    }
   }
+  console.log(items)
 
   // Insert the element if it is not in the specified hours
+  let found = false
   if (suffix === " AM" && hour < 7) {
     li.className += " pre-times"
     for (let time of scheduleInfo.querySelectorAll(".pre-times")) {
-      console.log(hour-time.innerText.split(":")[0] > 0, minute-time.innerText.split(":")[1].substring(0, 2) >= 0)
       if (hour-time.innerText.split(":")[0] > 0 && minute-time.innerText.split(":")[1].substring(0, 2) >= 0) {
         time.insertAdjacentElement("afterend", li)
-        return
+        found = true
       }
     }
-    if (scheduleInfo.querySelector(".pre-times")) {
-      scheduleInfo.querySelector(".pre-times").insertAdjacentElement("beforebegin", li)
-    } else {
-      scheduleInfo.querySelector(".time").insertAdjacentElement("beforebegin", li)
+
+    if (!found) {
+      if (scheduleInfo.querySelector(".pre-times")) {
+        scheduleInfo.querySelector(".pre-times").insertAdjacentElement("beforebegin", li)
+      } else {
+        scheduleInfo.querySelector(".time").insertAdjacentElement("beforebegin", li)
+      }
     }
-    //TODO send info to api
   }
+
+  for (let i = 0; i < user.schedule.length; i++) {
+    if (user.schedule[i].date === apiDate) {
+      user.schedule[i].items = items
+      updateUser()
+      return
+    }
+  }
+  let day = {
+    "date": apiDate,
+    "items": items
+  }
+  user.schedule.push(day)
+  updateUser()
 }
 
 let scheduleDeleteMode = false
@@ -398,9 +476,14 @@ scheduleDel.onclick = () => {
     for (let element of document.querySelectorAll(".schedule-times .item")) {
       element.className = "item delete"
       element.onclick = () => {
+        for (let i = 0; i < user.schedule.length; i++) {
+          if (user.schedule[i].date === apiDate) {
+            user.schedule[i].items = user.schedule[i].items.filter(e => {return e.time !== element.innerText.split(" ")[0]+" "+element.innerText.split(":")[1].split(" ")[1] && e.name !== element.innerText.split(":")[2]})
+          }
+        }
+        updateUser()
+
         element.remove()
-        
-        //TODO send info to API
       }
     }
   } else {
@@ -413,11 +496,6 @@ scheduleDel.onclick = () => {
 }
 
 // Motivation Wiget
-let motivationIcons = document.querySelectorAll(".motivation-slide-icons .icon")
-let motivationSlides = document.querySelectorAll(".motivation-info .slide")
-let motivationPrev = document.querySelector(".motivation-utils #prev")
-let motivationNext = document.querySelector(".motivation-utils #next")
-
 let motivationIndex = 0
 
 const motivationNextSlide = () => {
@@ -450,13 +528,43 @@ const motivationPrevSlide = () => {
 }
 motivationPrev.onclick = motivationPrevSlide
 
+const motivationSaveValues = () => {
+  let index = -1
+  for (let i = 0; i < user.motivation.days.length; i++) {
+    if (user.motivation.days[i] && user.motivation.days[i].date === apiDate) {
+      index = i
+    }
+  }
+  if (index === -1) {
+    index = user.motivation.days.length
+
+    user.motivation.days.push({
+      "date": apiDate,
+      "grateful": "",
+      "goal": "",
+      "targets": [],
+      "great": ""
+    })
+  }
+
+  let fields = ["grateful", "goal", "targets", "great"]
+  for (let i = 0; i < fields.length; i++) {
+    if (fields[i] !== "targets") {
+      user.motivation.days[index][fields[i]] = motivationSlides[i].querySelector("textarea").value
+    } else {
+      let values = []
+      for (let element of motivationSlides[i].querySelectorAll("textarea")) {
+        values.push(element.value)
+      }
+      user.motivation.days[index][fields[i]] = values
+    }
+  }
+  updateUser()
+}
+motivationSave.onclick = motivationSaveValues
+
 // Habits Wiget ----------------
-let habitsInfo = document.querySelector(".habits-info")
-let habitsAdd = document.querySelector(".habits #add")
-let habitsDel = document.querySelector(".habits #del")
-
 let habitsDeleteMode = false
-
 
 const habitsDeleteModeHandler = () => {
   if (!habitsDeleteMode) {
@@ -466,6 +574,13 @@ const habitsDeleteModeHandler = () => {
       element.onclick = () => {
         for (let tr of document.querySelectorAll(".habits tbody tr")) {
           if (tr.querySelector(".head") && tr.querySelector(".head").innerText === element.innerText) {
+            for (let i = 0; i < user.habits.length; i++) {
+              if (user.habits[i].name === element.innerText) {
+                user.habits = user.habits.filter(e => {return e.name !== element.innerText})
+                updateUser()
+              }
+            }
+
             tr.remove()
             return
           }
@@ -496,20 +611,25 @@ habitsAdd.onclick = () => {
   input.onkeypress = e => {
     if (!e) e = window.event 
     if (e.key === "Enter") {
-      let val = input.value
       // Blur the input (which will delete it)
       input.blur()
 
       // Add the new item to the list
       let html = ""
-      html += `<tr><td class=head>${val}</td>`
+      html += `<tr><td class=head>${input.value}</td>`
       for (let i = 0; i < 15; i++) {
         html += "<td class=item onclick=handleHabitCell(this)></td>"
       }
       html += "</tr>"
       document.querySelector(".habits-info tbody").innerHTML += html
 
-      //TODO send new info to server API for storage
+      let habit = {
+        "name": input.value,
+        "start": apiDate,
+        "value": ""
+      }
+      user.habits.push(habit)
+      updateUser()
     }
   }
 }
@@ -523,5 +643,189 @@ const handleHabitCell = element => {
     element.innerText = ""
   }
 
-  //TODO send new info to server API for storage
+  let habit
+  let name = element.parentElement.querySelector(".head").innerText
+  for (let i = 0; i < user.habits.length; i++) {
+    if (user.habits[i].name === name) {
+      habit = i 
+    }
+  }
+
+  let heads = document.querySelectorAll(".habits-info th")
+  let index = 0
+  let match
+  for (let i = 0; i < heads.length; i++) {
+    let a = heads[i].innerText.split("/")
+    let b = user.habits[habit].start.split(" ")
+    if (a[0] + " " + a[1] === b[0] + " " + b[1]) {
+      index = i
+      match = a
+    }
+  }
+
+  let value = ""
+  let items = element.parentElement.querySelectorAll(".item")
+  for (let i = 0; i < items.length; i++) {
+
+    if (items[i].innerText === "") {
+      if (i+1 < index) continue
+
+      value += "_"
+    } else {
+      value += items[i].innerText
+      if (i+1 < index && user.habits[habit].start.split(" ")[1] > (i+1)) {
+        user.habits[habit].start = match[0] + " " + (i+1) + " " + date.getFullYear()
+      }
+    }
+  }
+  user.habits[habit].value = value
+  updateUser()
 }
+
+// Update the UI with information from the api
+const updateUi = () => {
+  // Todo Wiget
+  let options = ["work", "personal"]
+  let todoHtml = ""
+  for (let i = 0; i < options.length; i++) {
+    for (let item of user.todo[options[i]]) {
+      todoHtml += `<li class=item onclick=removeTodoItem(this)>${item}</li>`
+    }
+    todoLists[i].innerHTML = todoHtml
+    todoHtml = ""
+  }
+
+  // Goals Wiget
+  let goalHtml = ""
+  for (let item of user.goals) {
+    goalHtml += `<li class=item onclick=removeGoalsItem(this)>${item}</li>`
+  }
+  goalsList.innerHTML = goalHtml
+
+
+  // Schedule Wiget
+  let day  
+  for (let d of user.schedule) {
+    if (d.date === apiDate) {
+      day = d
+    }
+  }
+
+  if (day) {
+    for (let item of day.items) {
+      let li = document.createElement("LI")
+      li.innerHTML = `<strong>${item.time}:</strong> ${item.value}`
+      li.className = "item"
+
+      let found = false
+      for (let time of scheduleInfo.querySelectorAll("li")) {
+        if (time.innerText.split(":")[0] == item.time.split(":")[0] && time.innerText.split(" ")[1][0] == item.time.split(" ")[1][0] && item.time.split(":")[1].split(" ")[0]-time.innerText.split(":")[1].substring(0, 2) >= 0) {
+          time.insertAdjacentElement("afterend", li)
+          found = true
+        }
+      }
+
+      if (found) continue
+
+      li.className += " pre-times"
+      for (let time of scheduleInfo.querySelectorAll(".pre-times")) {
+        if (item.time.split(":")[0]-time.innerText.split(":")[0] > 0 && item.time.split(":")[1].split(" ")[0]-time.innerText.split(":")[1].substring(0, 2) >= 0) {
+          time.insertAdjacentElement("afterend", li)
+          found = true
+        }
+      }
+
+      if (found) continue
+
+      if (scheduleInfo.querySelector(".pre-times")) {
+        scheduleInfo.querySelector(".pre-times").insertAdjacentElement("beforebegin", li)
+      } else {
+        scheduleInfo.querySelector(".time").insertAdjacentElement("beforebegin", li)
+      }
+    }
+  }
+
+  // Motivation Wiget
+  let index = -1
+  for (let i = 0; i < user.motivation.days.length; i++) {
+    if (user.motivation.days[i] && user.motivation.days[i].date === apiDate) {
+      index = i
+    }
+  }
+
+  if (index !== -1) {
+    let fields = ["grateful", "goal", "targets", "great"]
+    for (let i = 0; i < fields.length; i++) {
+      if (fields[i] !== "targets") {
+        motivationSlides[i].querySelector("textarea").value = user.motivation.days[index][fields[i]]
+      } else {
+        let elements = motivationSlides[i].querySelectorAll("textarea")
+        for (let j = 0; j < elements.length; j++) {
+          elements[j].value = user.motivation.days[index][fields[i]][j]
+        }
+      }
+    }
+  }
+
+  // Habits Wiget
+  let month = apiDate.split(" ")[0]
+
+  let monthDays = [31, 28+leapYear, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+  let startDay = 1, endDay = 14
+  if (apiDate.split(" ")[1] > 14) {
+    startDay = 15
+    endDay = monthDays[month-1]
+  }
+  for (let i = startDay; i <= endDay; i++) {
+    habitsInfo.querySelector("#dates").innerHTML += `<th>${month}/${i}</th>`
+  }
+
+  let html = ""
+  for (let habit of user.habits) {
+    html += `<tr><td class=head>${habit.name}</td>`
+
+    let data = habit.value
+
+    let startYear = habit.start.split(" ")[2]
+    while (startYear < apiDate.split(" ")[2]) {
+      data = data.substring(365+leapYear)
+      startYear++
+    }
+
+    let startMonth = habit.start.split(" ")[0]
+    while (startMonth < apiDate.split(" ")[0]) {
+      data = data.substring(monthDays[startMonth-1])
+      startMonth++
+    }
+
+
+    let start = habit.start.split(" ")[1]
+    for (let i = 0; i < endDay-startDay+1; i++) {
+      let val = ""
+      if (i >= start-1) {
+        if (habit.value[i-start+1] && habit.value[i-start+1] !== "_") {
+          val = data[i-start+1]
+        }
+      }
+
+      html += `<td class=item onclick=handleHabitCell(this)>${val}</td>`
+    }
+
+    html += `</tr>`
+
+  }
+  habitsInfo.querySelector("tbody").innerHTML += html
+
+}
+
+// Update the api with the user's information
+const updateUser = () => {
+  let xml = new XMLHttpRequest()
+
+  xml.responseType = "json"
+  //xml.onload = () => {console.log(xml.response)}
+
+  xml.open("PUT", "https://api.ethanbaker.dev/" + TOKEN)
+  xml.send(JSON.stringify(user))
+}
+

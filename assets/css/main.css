@@ -385,6 +385,11 @@ main .day {
   font-size: 1.4em;
 }
 
+.day #weather img {
+  background-color: #292929;
+  border-radius: 50%;
+}
+
 .day .motivation {
   position: absolute;
   right: 0;
@@ -454,6 +459,15 @@ main .day {
 
 .motivation-slide-icons .selected {
   color: var(--hover-color);
+}
+
+.motivation #save {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  margin-left: 1vw;
+  font-size: 1em;
+  padding: 0.6em;
 }
 
 .motivation #prev {
