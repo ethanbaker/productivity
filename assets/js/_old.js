@@ -1,51 +1,76 @@
-// TEMP FOR LAPTOP
-let TOKEN = "_DEFAULT"
+// Get the credentials for various apis
+let xml1 = new XMLHttpRequest()
+let url = "/assets/credentials.json"
 
-let user
 let credentials
+xml1.responseType = "json"
+xml1.onload = () => {
+  credentials = xml1.response
+}
+
+xml1.open("GET", url)
+xml1.send()
+
+// Get the user's data from the productivity api. If the user has no data, create it for the user
+let xml2 = new XMLHttpRequest()
+url = "https://api.ethanbaker.dev/" + TOKEN
+
+let user 
+xml2.responseType = "json"
+xml2.onload = () => {
+  user = xml2.response
+
+  // Create a new user if the current user doesn't exist
+  if (!user) {
+    let xml3 = new XMLHttpRequest()
+    xml3.responseType = "json"
+    xml3.onload = () => {
+      user = xml3.response
+      updateUi()
+    }
+    xml3.open("POST", url)
+    xml3.send(TOKEN)
+  } else {
+    updateUi()
+  }
+}
+
+xml2.open("GET", url)
+xml2.send()
+
 /*
   // Small navigation menu ---------
-
 let wrap = document.querySelector("main")
 let menu = document.querySelector("#small-menu")
 let menuOpen = document.querySelector("#small-nav button.open")
 let menuClose = document.querySelector("#small-menu button.close")
-
 const closeMenu = event => {
   // Hide the small nav when the menu isn't open
   menu.style.opacity = "0"
   menu.style.zIndex = "-1"
   menuOpen.style.visibility = "visible"
-
   // Unblur the page
   wrap.style.filter = "blur(0)"
 }
-
 const openMenu = event => {
   // Make the menu appear
   menu.style.opacity = "1"
   menu.style.zIndex = "999999999999999999"
   menu.style.display = "flex"
   menuOpen.style.visibility = "collapse"
-
   // Blur the page
   wrap.style.filter = "blur(2px)"
   menu.style.background = "var(--bg-color)"
   menu.style.opacity = "0.85"
 }
-
 menuOpen.onclick = openMenu
 menuClose.onclick = closeMenu
-
 // Close the menu when the links are clicked
 let links = document.querySelectorAll("#small-menu .nav-item a")
 for (let v of links) {
   v.onclick = closeMenu
 }
 */
-
-// Local storage
-let cache = JSON.parse(localStorage.getItem("ethanbaker.dev"))
 
 /* HTML Elements */
 let html = document.querySelector("html")
@@ -83,619 +108,59 @@ let habitsInfo = document.querySelector(".habits-info")
 let habitsAdd = document.querySelector(".habits #add")
 let habitsDel = document.querySelector(".habits #del")
 
-/* Used for time keeping */
-class Time {
-  // Constants involving time
-  months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-  dayCounts = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-  dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-  prefixes = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"]
-
-  // Instance variables
-  #_stamp = []
-  #_date
-  #_leapYear
-
-  constructor() {
-    this.#_date = new Date()
-
-    // Initialize the time stamp
-    this.#_stamp = [this.date.getMonth()+1, this.date.getDate(), this.date.getFullYear()]
-
-    // Adjust for leap years
-    this.dayCounts[1] += ((this.date.getFullYear() % 4 == 0) && (this.date.getFullYear() % 100 != 0)) || (this.date.getFullYear() % 400 == 0) ? 1 : 0
-  }
-
-  // Return the current time
-  timeStamp() {
-    let now = new Date()
-
-    let hours = now.getHours()
-    let minutes = now.getMinutes()
-
-    return Time.convert24to12(`${hours}:${minutes}`)
-  }
-
-  // Return a string with the current date
-  dateStamp() {
-    let weekday = this.dayNames[this.date.getDay()]
-    let month = this.months[this.date.getMonth()]
-    let day = this.date.getDate()
-    let prefix = this.prefixes[this.date.getDate()%10]
-    let year = this.date.getFullYear()
-
-    return `${weekday}, ${month} ${day}${prefix}, ${year}`
-  }
-
-  // Convert a 24 hour time to a 12 hour one
-  static convert24to12(time) {
-    let hours = time.split(":")[0]
-    let minutes = time.split(":")[1]
-    let prefix = "AM"
-
-    if (hours >= 12) {
-      hours -= hours > 12 ? 12 : 0
-
-      prefix = "PM"
-    } else if (hours === 0) {
-      hours = 12
-    }
-
-    minutes += "" + minutes < 10 ? 0 : ""
-
-    return `${hours}:${minutes} ${prefix}`
-  }
-
-  // Compare two times (false if t2 >= t1, true if t1 > t2, )
-  static compare(t1, t2) {
-    let t1Hours = t1.split(":")[0]
-    let t1Mins = t1.split(":")[1]
-
-    let t2Hours = t2.split(":")[0]
-    let t2Mins = t2.split(":")[1]
-
-    return t1Hours < t2Hours ? false : t1Hours > t2Hours ? true : t1Mins < t2Mins ? false : t1Mins > t2Mins ? true : false
-  }
-
-  // Accessor Methods
-  get stamp() {
-    return this.#_stamp
-  }
-
-  get date() {
-    return this.#_date
-  }
-}
 
 /* Dark and Light Mode */
-class Mode {
-  // Instance variables
-  button
-  mode
-  self
 
-  constructor(id) {
-    // Get the local cache data from the user and set the UI theme
-    // accordingly
-    !cache.mode ? cache.mode = "dark" : false
-    cache.mode === "dark" ? this.setDark() : this.setLight()
-    this.mode = cache.mode
-
-    // Get the button from the document and set its onclick function
-    this.button = document.querySelector("#" + id)
-    this.button.onclick = () => this.toggleMode()
-  }
-
-  // Save the user's current cache to their local storage
-  save() {
-    localStorage.setItem("ethanbaker.dev", JSON.stringify(cache))
-  }
-
-  // Set the UI to dark mode
-  setDark() {
-    this.mode = "dark"
-    cache.mode = "dark"
-
-    html.style.setProperty("--bg-color", "#292929")
-    html.style.setProperty("--text-color", "#eeeeee")
-    html.style.setProperty("--hover-color", "#ff4400")
-    html.style.setProperty("--line-color", "#474747")
-    html.style.setProperty("--link-color", "#949494")
-  }
-
-  // Set the UI to light mode
-  setLight() {
-    this.mode = "light"
-    cache.mode = "light"
-
-    html.style.setProperty("--text-color", "#292929")
-    html.style.setProperty("--bg-color", "#eeeeee")
-    html.style.setProperty("--hover-color", "#67e1ea")
-    html.style.setProperty("--line-color", "#949494")
-    html.style.setProperty("--link-color", "#474747")
-  }
-
-  // Switch the UI between light and dark mode
-  toggleMode() {
-    this.mode === "light" ? this.setDark() : this.setLight()
-
-    this.save()
+// Set the user's cache to the default one
+const defaultCache = () => {
+  return {
+    blog: {
+      mode: "dark",
+    },
   }
 }
 
-let mode = new Mode("mode-button")
-
-/* Wiget Superclass */
-class Wiget {
-  // Instance variables
-  #_x = 0
-  #_y = 0
-  #_width = 0
-  #_height = 0
-  element
-
-  constructor(x, y, width, height, id) {
-    this.#_x = x
-    this.#_y = y
-    this.#_width = width
-    this.#_height = height
-    this.element = document.querySelector(id)
-  }
-
-  save() {
-    throw new Error("Must implement save()")
-  }
-
-  update() {
-    throw new Error("Must implement update()")
-  }
-
-  // Accessor Methods
-  get x() {
-    return this.#_x
-  }
-
-  get y() {
-    return this.#_y
-  }
-
-  get width() {
-    return this.#_width
-  }
-
-  get height() {
-    return this.#_height
-  }
-
-  // Mutator Methods
-  set x(x) {
-    this.#_x = x
-  }
-
-  set y(y) {
-    this.#_y = y
-  }
-
-  set width(width) {
-    this.#_width = width
-  }
-
-  set height(height) {
-    this.#_height = height
-  }
+// Save the user's current settings
+const save = () => {
+  localStorage.setItem("ethanbaker.dev", JSON.stringify(cache))
 }
+
+// Switch between dark and light mode
+const toggleMode = () => {
+  cache.blog.mode === "light" ? setDark() : setLight()
+}
+
+
+// Set the screen to dark mode
+const setDark = () => {
+  cache.blog.mode = "dark"
+  save()
+
+  html.style.setProperty("--bg-color", "#292929")
+  html.style.setProperty("--text-color", "#eeeeee")
+  html.style.setProperty("--hover-color", "#ff4400")
+  html.style.setProperty("--line-color", "#474747")
+  html.style.setProperty("--link-color", "#949494")
+}
+
+// Set the screen to light mode
+const setLight = () => {
+  cache.blog.mode = "light"
+  save()
+
+  html.style.setProperty("--text-color", "#292929")
+  html.style.setProperty("--bg-color", "#eeeeee")
+  html.style.setProperty("--hover-color", "#67e1ea")
+  html.style.setProperty("--line-color", "#949494")
+  html.style.setProperty("--link-color", "#474747")
+}
+
+// Get the user's cache and set the color appropriately
+let localCache = localStorage.getItem("ethanbaker.dev")
+let cache = localCache ? JSON.parse(localCache) : defaultCache()
+cache.blog.mode === "light" ? setLight() : setDark()
 
 /* Todo Wiget */
-class Todo extends Wiget {
-  // Instance variables
-  lists = []
-  removed = []
-  #_index = 0
-
-  listElements = []
-  listButtons = []
-  utilButtons = []
-
-
-  constructor(x, y, width, height, id) {
-    super(x, y, width, height, id) 
-
-    let self = this
-
-    // Set the instance variables to the document elements
-    this.listElements = [this.element.querySelector("#work-list"), this.element.querySelector("#personal-list")]
-    this.listButtons = [this.element.querySelector("#work"), this.element.querySelector("#personal")]
-    this.utilButtons = [this.element.querySelector("#undo"), this.element.querySelector("#add")]
-
-    // Onclick methods for list buttons
-    for (let button of this.listButtons) {
-      button.onclick = () => this.toggleList(button) 
-      this.removed.push([])
-      this.lists.push([])
-    }
-
-    // Onclick methods for util buttons
-    this.utilButtons[0].onclick = () => self.undo()
-    this.utilButtons[1].onclick = () => self.add()
-
-
-    // Hide the furthest list
-    this.listElements[1].className = "hidden"
-
-    // Draw the current items on the list
-    this.update()
-  }
-
-  // Add an item to the current list
-  add() {
-    if (this.element.querySelector("input")) return
-
-    let self = this
-
-    // Create an input element
-    let input = document.createElement("INPUT")
-    input.id = "todo-add"
-    input.type = "text"
-    input.onkeypress = e => {
-      if (e.key !== "Enter") return
-
-      self.lists[self.index].push(input.value)
-
-      input.blur()
-
-      self.update()
-    }
-
-    // Create a list info element
-    let li = document.createElement("LI")
-    li.appendChild(input)
-
-    // Add the list info element to the list
-
-    this.listElements[this.index].appendChild(li)
-    this.listElements[this.index].scrollTop = this.listElements[this.index].scrollHeight
-
-    input.focus()
-    input.addEventListener("focusout", e => {
-      if (e) li.remove()
-    })
-  }
-
-  // Remove an item from the current list
-  remove(element) {
-    this.removed[this.index].push(element.innerText)
-
-    this.lists[this.index] = this.lists[this.index].filter(e => {return e !== element.innerText})
-
-    element.remove()
-
-    this.update()
-  }
-
-  // Undo
-  undo(element) {
-    if (this.removed[this.index].length === 0) return
-
-    this.lists[this.index].push(this.removed[this.index].pop())
-
-    this.update()
-  }
-
-  // Toggle between lists
-  toggleList(element) {
-    if (["work", "personal"][this.index] === element.innerText.toLowerCase()) return
-
-    this.index = (this.index+1)%2
-
-    this.listElements[this.index].className = ""
-    this.listElements[(this.index+1)%2].className = "hidden"
-  }
-
-  // Update the items in the specified list
-  update() {
-    this.save()
-
-    let self = this
-
-    for (let i = 0; i < self.lists.length; i++) {
-      self.listElements[i].innerHTML = ""
-
-      for (let item of self.lists[i]) {
-        let li = document.createElement("LI")
-        li.className = "item"
-        li.innerText = item
-        li.onclick = () => self.remove(li)
-
-        self.listElements[i].appendChild(li)
-      }
-    }
-  }
-
-  save() {
-    if (!user) return
-
-    user.todo.work = this.lists[0]
-    user.todo.personal = this.lists[1]
-
-    updateUser()
-  }
-
-  // Accessor Methods
-  get index() {
-    return this.#_index
-  }
-
-  // Mutator Methods
-  set index(index) {
-    this.#_index = index
-  }
-}
-
-let todoWiget = new Todo(0, 0, 25, 50, "#todo")
-
-class Goals extends Wiget {
-  // Instance variables
-  list = []
-  removed = []
-
-  listElement
-  utilButtons = []
-
-  constructor(x, y, width, height, id) {
-    super(x, y, width, height, id) 
-
-    let self = this
-
-    // Set the instance variables to the document elements
-    this.listElement = this.element.querySelector(".goals-info")
-    this.utilButtons = [this.element.querySelector("#undo"), this.element.querySelector("#add")]
-
-    // Onclick methods for util buttons
-    this.utilButtons[0].onclick = () => self.undo()
-    this.utilButtons[1].onclick = () => self.add()
-  }
-
-  // Add an item to the current list
-  add() {
-    if (this.element.querySelector("input")) return
-
-    let self = this
-
-    // Create an input element
-    let input = document.createElement("INPUT")
-    input.id = "goals-add"
-    input.type = "text"
-    input.onkeypress = e => {
-      if (e.key !== "Enter") return
-
-      self.list.push(input.value)
-
-      input.blur()
-
-      self.update()
-    }
-
-    // Create a list info element
-    let li = document.createElement("LI")
-    li.appendChild(input)
-
-    // Add the list info element to the list
-
-    this.listElement.appendChild(li)
-    this.listElement.scrollTop = this.listElement.scrollHeight
-
-    input.focus()
-    input.addEventListener("focusout", e => {
-      if (e) li.remove()
-    })
-  }
-
-  // Remove an item from the current list
-  remove(element) {
-    this.removed.push(element.innerText)
-
-    this.list = this.list.filter(e => {return e !== element.innerText})
-
-    element.remove()
-
-    this.update()
-  }
-
-  // Undo
-  undo(element) {
-    if (this.removed.length === 0) return
-
-    this.list.push(this.removed.pop())
-
-    this.update()
-  }
-
-  // Update the items in the specified list
-  update() {
-    this.save()
-
-    let self = this
-
-    this.listElement.innerHTML = ""
-
-    for (let item of self.list) {
-      let li = document.createElement("LI")
-      li.className = "item"
-      li.innerText = item
-      li.onclick = () => self.remove(li)
-
-      self.listElement.appendChild(li)
-    }
-  }
-
-  save() {
-    if (!user) return
-
-    user.goals = this.list
-
-    updateUser()
-  }
-}
-
-let goalsWiget = new Goals(2, 55, 25, 40, "#goals")
-
-class Ambient extends Wiget {
-  // Instance variables
-  dateElement
-  timeElement
-  weatherElement
-
-  constructor(x, y, width, height, id) {
-    super(x, y, width, height, id) 
-
-    // Get the elements from the DOM
-    this.dateElement = document.querySelector(".day #date")
-    this.timeElement = this.element.querySelector("#time")
-    this.weatherElement = this.element.querySelector("#weather")
-
-    // Create a new time object for the date
-    this.time = new Time()
-
-    // Update the date element with the date
-    this.setDate()
-
-    // Continuously update the time element
-    setInterval(this.setTime(), 1000)
-    this.setTime()
-
-    // Continuously update the weather element
-    setInterval(this.setWeather(), 900000)
-  }
-
-  // Set the date of the date element
-  setDate() {
-    this.dateElement.innerText = this.time.dateStamp()
-  }
-
-  // Set the time of the time element
-  setTime() {
-    this.timeElement.innerText = this.time.timeStamp()
-  }
-
-  async setWeather() {
-    if (!credentials) return
-
-    // Get the position of the user
-    let posRaw = await fetch(`https://api.ipdata.co?api-key=${credentials.ip.key}`)
-    let pos = await posRaw.json()
-
-    // Get the weather data
-    let weatherRaw = await fetch(`https://api.openweathermap.org/data/2.5/weather?zip=${pos.postal}&APPID=${credentials.weather.key}`)
-    let weather = await weatherRaw.json()
-
-    // Update the weather div
-    this.weatherElement.innerHTML = `${Math.floor((weather.main.temp - 273.15) * (9/5) + 32)} °F. ${weather.weather[0].description[0].toUpperCase() + weather.weather[0].description.substring(1)} <br><img src="https://openweathermap.org/img/wn/${weather.weather[0].icon}.png" />`
-  }
-}
-
-let ambientWiget = new Ambient(65, 0, 35, 10, "#ambient")
-
-class Schedule extends Wiget {
-  // Instance variables
-  times = []
-  deleteMode = false
-  inputVisible = false
-
-  list
-  input
-  timeInput
-  valueInput
-  submitInput
-  escapeInput
-  utilButtons = []
-
-  constructor(x, y, width, height, id) {
-    super(x, y, width, height, id)
-
-    // Get elements from the DOM
-    this.list = this.element.querySelector(".schedule-times")
-    this.input = this.element.querySelector(".input")
-    this.timeInput = this.input.querySelector("#time")
-    this.valueInput = this.input.querySelector("#name")
-    this.submitInput = this.input.querySelector("#submit")
-    this.escapeInput = this.input.querySelector("#escape")
-
-    this.utilButtons = [this.element.querySelector("#del"), this.element.querySelector("#add")]
-    this.utilButtons[0].onclick = () => this.delete()
-    this.utilButtons[1].onclick = () => this.add()
-  }
-
-  add() {
-    if (this.inputVisible) return
-
-    // Get the values from the user and convert them to important
-    // formats
-    let rawTime = this.timeInput.value
-    let time = Time.convert24to12(rawTime)
-    let value = this.valueInput.value
-
-    // TODO error message if time or value is empty
-    if (time === "" || value === "") return
-
-    this.inputVisible = true
-
-    // Blur the schedule and show the input
-    this.list.style.filter = "blur(2px)"
-    this.input.className = "input"
-
-    // Create an element to add to the list
-    let li = document.createElement("LI")
-    li.innerHTML = `<b>${time}:</b> ${value}`
-    li.className = "item"
-
-    // Insert the element to the list
-    let newItem = {
-      "rawTime": rawTime,
-      "time": time,
-      "value": value,
-    }
-
-    for (let item of this.list) {
-    }
-
-    // Update the schedule list
-    this.update()
-  }
-
-  // Remove an element from the schedule
-  remove(element) {
-    if (this.inputVisible) return
-
-    for (let item of this.times) {
-      if (element.innerText === item.value) {
-        this.times = this.times.filter(t => {return !(t.time === item.time && t.value !== item.value)})
-
-        element.remove()
-      }
-    }
-  }
-
-  // Put the schedule wiget into delete mode
-  delete() {
-    if (this.inputVisible) return
-
-    let self = this
-
-    this.deleteMode = !this.deleteMode
-
-    for (let item of element.querySelectorAll("item")) {
-      item.className = this.deleteMode ? "item delete" : "item"
-      item.onclick = this.deleteMode ? () => {self.remove(item)} : () => {}
-    }
-  }
-
-  // Update the schedule list
-  update() {
-     
-  }
-}
-
-/*
 let todoRemoved = [[], []]
 let todoIndex = 0
 
@@ -761,7 +226,7 @@ todoAdd.onclick = () => {
       // Add the new item to the list
       todoLists[todoIndex].innerHTML += `<li class=item onclick=removeTodoItem(this)>${input.value}</li>`
 
-// Update the user
+      // Update the user
       let option = ["work", "personal"][todoIndex]
       user.todo[option].push(input.value)
       updateUser()
@@ -779,10 +244,8 @@ const delTodoInput = () => {
     }
   }
 }
-*/
 
 /* Goals Wiget */
-/*
 let goalsRemoved = []
 
 // Delete parts of the list
@@ -841,12 +304,10 @@ const delGoalsInput = () => {
     }
   }
 }
-*/
 
 // Day Wiget ------------------
 
 // Set the title of the wiget to the date
-/*
 let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 let prefixes = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"]
@@ -900,10 +361,8 @@ const setWeather = async () => {
 
 setInterval(setWeather(), 900000)
 setWeather()
-*/
 
 /* Schedule Wiget */
-/*
 const openEventMenu = () => {
   scheduleList.style.filter = "blur(2px)"
   scheduleInput.className = "input"
@@ -1028,7 +487,6 @@ scheduleDel.onclick = () => {
     }
   }
 }
-*/
 
 // Motivation Wiget
 let motivationIndex = 0
@@ -1363,49 +821,3 @@ const updateUser = () => {
   xml.open("PUT", "https://api.ethanbaker.dev/" + TOKEN)
   xml.send(JSON.stringify(user))
 }
-
-/* XML Requests */
-let xml1 = new XMLHttpRequest()
-let url = "/assets/credentials.json"
-
-xml1.responseType = "json"
-xml1.onload = () => {
-  credentials = xml1.response
-}
-
-xml1.open("GET", url)
-xml1.send()
-
-// Get the user's data from the productivity api. If the user has no data, create it for the user
-let xml2 = new XMLHttpRequest()
-url = "https://api.ethanbaker.dev/" + TOKEN
-
-xml2.responseType = "json"
-xml2.onload = () => {
-  user = xml2.response
-
-  // Create a new user if the current user doesn't exist
-  if (!user) {
-    let xml3 = new XMLHttpRequest()
-    xml3.responseType = "json"
-    xml3.onload = () => {
-      user = xml3.response
-      //updateUi()
-    }
-    xml3.open("POST", url)
-    xml3.send(TOKEN)
-  } else {
-    //updateUi()
-  }
-
-  todoWiget.lists = [user.todo.work, user.todo.personal]
-  todoWiget.update()
-
-  goalsWiget.list = user.goals
-  goalsWiget.update()
-
-  ambientWiget.setWeather()
-}
-
-xml2.open("GET", url)
-xml2.send()

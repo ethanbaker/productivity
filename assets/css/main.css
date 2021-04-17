@@ -2,14 +2,14 @@
 @import url(/assets/css/font-awesome.min.css);
 @import url('https://fonts.googleapis.com/css?family=Orbitron&display=swap'); 
 
-/* Used for dark/light mode */
+/* Dark/light mode */
 ::root {
   --bg-color: #292929;
   --text-color: #eeeeee;
   --hover-color: #ff4400;
 }
 
-/* Used for scrollbars */
+/* Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -207,7 +207,7 @@ main {
 }
 
 /* Todo wiget */
-main .todo {
+main #todo {
   position: absolute;
   width: 25vw;
   height: 50vh;
@@ -282,7 +282,7 @@ main .todo {
 }
 
 /* Goals wiget */
-main .goals {
+main #goals {
   position: absolute;
   top: 55vh;
   left: 2em;
