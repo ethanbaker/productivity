@@ -1,6 +1,3 @@
-// TEMP FOR LAPTOP
-let TOKEN = "_DEFAULT"
-
 let user
 let credentials
 /*
