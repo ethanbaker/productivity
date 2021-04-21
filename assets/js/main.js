@@ -46,42 +46,7 @@ for (let v of links) {
 
 // Local storage
 let cache = JSON.parse(localStorage.getItem("ethanbaker.dev"))
-
-/* HTML Elements */
-let html = document.querySelector("html")
-
-// Todo Wiget
-let todoInfo = document.querySelector(".todo-info")
-let todoList = document.querySelector(".todo-info #work-list")
-let todoUndo = document.querySelector(".todo #undo")
-let todoAdd = document.querySelector(".todo #add")
-let todoButtons = [document.querySelector(".todo-nav #work"), document.querySelector(".todo-nav #personal")]
-let todoLists = [document.querySelector(".todo-info #work-list"), document.querySelector(".todo-info #personal-list")]
-
-// Goals Wiget
-let goalsList = document.querySelector(".goals-info")
-let goalsUndo = document.querySelector(".goals-utils #undo")
-let goalsAdd = document.querySelector(".goals-utils #add")
-
-// Schedule Wiget
-let scheduleAdd = document.querySelector(".schedule #add")
-let scheduleDel = document.querySelector(".schedule #del")
-let scheduleEsc = document.querySelector(".schedule #escape")
-let scheduleList = document.querySelector(".schedule ul")
-let scheduleInfo = document.querySelector(".schedule-info")
-let scheduleInput = document.querySelector(".schedule-info .input")
-
-// Motivation Wiget
-let motivationIcons = document.querySelectorAll(".motivation-slide-icons .icon")
-let motivationSlides = document.querySelectorAll(".motivation-info .slide")
-let motivationPrev = document.querySelector(".motivation-utils #prev")
-let motivationNext = document.querySelector(".motivation-utils #next")
-let motivationSave = document.querySelector(".motivation #save")
-
-// Habits Wiget
-let habitsInfo = document.querySelector(".habits-info")
-let habitsAdd = document.querySelector(".habits #add")
-let habitsDel = document.querySelector(".habits #del")
+if (!cache) cache = {mode: "dark"}
 
 /* Used for time keeping */
 class Time {
@@ -127,9 +92,27 @@ class Time {
     return `${weekday}, ${month} ${day}${prefix}, ${year}`
   }
 
+  // Get the two weeks the current date is present in
+  weekSpan() {
+    let dates = []
+    let start = 1
+    let end = 14
+
+    // Get a two week span depending on what half of the month the date is in
+    if (this.stamp[1] > 14) {
+      start = 15
+      end = this.dayCounts[this.stamp[0]-1]
+    }
+    for (let i = start; i <= end; i++) {
+      dates.push(`${this.stamp[0]}/${i}`)
+    }
+
+    return dates
+  }
+
   // Convert a 24 hour time to a 12 hour one
   static convert24to12(time) {
-    let hours = time.split(":")[0]
+    let hours = Number(time.split(":")[0])
     let minutes = time.split(":")[1]
     let prefix = "AM"
 
@@ -146,15 +129,32 @@ class Time {
     return `${hours}:${minutes} ${prefix}`
   }
 
-  // Compare two times (false if t2 >= t1, true if t1 > t2, )
+  // Compare two times (false if t2 > t1, true if t1 > t2, -1 if t2 == t1)
   static compare(t1, t2) {
-    let t1Hours = t1.split(":")[0]
-    let t1Mins = t1.split(":")[1]
+    let t1Hours = Number(t1.split(":")[0])
+    let t1Mins = Number(t1.split(":")[1])
 
-    let t2Hours = t2.split(":")[0]
-    let t2Mins = t2.split(":")[1]
+    let t2Hours = Number(t2.split(":")[0])
+    let t2Mins = Number(t2.split(":")[1])
 
     return t1Hours < t2Hours ? false : t1Hours > t2Hours ? true : t1Mins < t2Mins ? false : t1Mins > t2Mins ? true : false
+  }
+
+  // Compare two date stamp arrays 
+  static compareDates(d1, d2) {
+    if (d1[2] > d2[2]) return true
+    if (d1[2] < d2[2]) return false
+    if (d1[0] > d2[0]) return true
+    if (d1[0] < d2[0]) return false
+    if (d1[1] > d2[1]) return true
+    if (d1[1] < d2[1]) return false
+
+    return -1
+  }
+
+  // See if the year is a leap year
+  static isLeapYear(year) {
+    return ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)
   }
 
   // Accessor Methods
@@ -165,7 +165,13 @@ class Time {
   get date() {
     return this.#_date
   }
+
+  get leapYear() {
+    return this.#_leapYear
+  }
 }
+
+let html = document.querySelector("html")
 
 /* Dark and Light Mode */
 class Mode {
@@ -225,8 +231,26 @@ class Mode {
 
 let mode = new Mode("mode-button")
 
-/* Wiget Superclass */
-class Wiget {
+/* User Session */
+class Session {
+  // Instance variables
+  #_token
+
+  constructor(token) {
+    this.#_token = token
+  }
+
+  updateUi() {
+
+  }
+
+  updateApi() {
+
+  }
+}
+
+/* Widget Superclass */
+class Widget {
   // Instance variables
   #_x = 0
   #_y = 0
@@ -285,8 +309,8 @@ class Wiget {
   }
 }
 
-/* Todo Wiget */
-class Todo extends Wiget {
+/* Todo Widget */
+class Todo extends Widget {
   // Instance variables
   lists = []
   removed = []
@@ -431,9 +455,9 @@ class Todo extends Wiget {
   }
 }
 
-let todoWiget = new Todo(0, 0, 25, 50, "#todo")
+let todoWidget = new Todo(0, 0, 25, 50, "#todo")
 
-class Goals extends Wiget {
+class Goals extends Widget {
   // Instance variables
   list = []
   removed = []
@@ -537,9 +561,9 @@ class Goals extends Wiget {
   }
 }
 
-let goalsWiget = new Goals(2, 55, 25, 40, "#goals")
+let goalsWidget = new Goals(2, 55, 25, 40, "#goals")
 
-class Ambient extends Wiget {
+class Ambient extends Widget {
   // Instance variables
   dateElement
   timeElement
@@ -593,9 +617,9 @@ class Ambient extends Wiget {
   }
 }
 
-let ambientWiget = new Ambient(65, 0, 35, 10, "#ambient")
+let ambientWidget = new Ambient(65, 0, 35, 10, "#ambient")
 
-class Schedule extends Wiget {
+class Schedule extends Widget {
   // Instance variables
   times = []
   deleteMode = false
@@ -612,6 +636,15 @@ class Schedule extends Wiget {
   constructor(x, y, width, height, id) {
     super(x, y, width, height, id)
 
+    // Append defaults to times
+    for (let hour = 7; hour < 25; hour++) {
+      this.times.push({
+        rawTime: hour%25+":00",
+        time: Time.convert24to12(hour%25+":0"),
+        default: true,
+      })
+    }
+
     // Get elements from the DOM
     this.list = this.element.querySelector(".schedule-times")
     this.input = this.element.querySelector(".input")
@@ -620,45 +653,54 @@ class Schedule extends Wiget {
     this.submitInput = this.input.querySelector("#submit")
     this.escapeInput = this.input.querySelector("#escape")
 
+    // Util buttons' onclick functions
     this.utilButtons = [this.element.querySelector("#del"), this.element.querySelector("#add")]
     this.utilButtons[0].onclick = () => this.delete()
-    this.utilButtons[1].onclick = () => this.add()
-  }
-
-  add() {
-    if (this.inputVisible) return
-
-    // Get the values from the user and convert them to important
-    // formats
-    let rawTime = this.timeInput.value
-    let time = Time.convert24to12(rawTime)
-    let value = this.valueInput.value
-
-    // TODO error message if time or value is empty
-    if (time === "" || value === "") return
-
-    this.inputVisible = true
-
-    // Blur the schedule and show the input
-    this.list.style.filter = "blur(2px)"
-    this.input.className = "input"
-
-    // Create an element to add to the list
-    let li = document.createElement("LI")
-    li.innerHTML = `<b>${time}:</b> ${value}`
-    li.className = "item"
-
-    // Insert the element to the list
-    let newItem = {
-      "rawTime": rawTime,
-      "time": time,
-      "value": value,
+    this.utilButtons[1].onclick = () => {
+      // Blur the schedule and show the input
+      this.list.style.filter = "blur(2px)"
+      this.input.className = "input"
     }
 
-    for (let item of this.list) {
+    // Input buttons' onclick functions
+    this.escapeInput.onclick = () => {
+      // Unblur the schedule, show the input, and reset values
+      this.list.style.filter = ""
+      this.input.className = "input hidden"
+      this.timeInput.value = ""
+      this.valueInput.value = ""
     }
 
-    // Update the schedule list
+    this.submitInput.onclick = () => {
+      // Get the values from the user and convert them to useful formats
+      let rawTime = this.timeInput.value
+      let time = Time.convert24to12(rawTime)
+      let value = this.valueInput.value
+
+      // TODO error message if time or value is empty
+      if (time === "" || value === "") return
+
+      // Insert the element to the list
+      let newItem = {
+        "rawTime": rawTime,
+        "time": time,
+        "value": value,
+      }
+      this.times.push(newItem)
+      this.times = this.times.sort((a, b) => {return Time.compare(b.rawTime, a.rawTime) ? -1 : 1})
+
+      // Unblur the schedule, show the input, and reset values
+      this.list.style.filter = ""
+      this.input.className = "input hidden"
+      this.timeInput.value = ""
+      this.valueInput.value = ""
+      this.inputVisible = false
+
+      // Update the schedule list
+      this.update()
+      this.save()
+    }
+
     this.update()
   }
 
@@ -667,12 +709,15 @@ class Schedule extends Wiget {
     if (this.inputVisible) return
 
     for (let item of this.times) {
-      if (element.innerText === item.value) {
-        this.times = this.times.filter(t => {return !(t.time === item.time && t.value !== item.value)})
+      if (element.innerText === `${item.time}: ${item.value}`) {
+        this.times = this.times.filter(t => {return !(t.time === item.time && t.value === item.value)})
 
         element.remove()
+        break
       }
     }
+
+    this.save()
   }
 
   // Put the schedule wiget into delete mode
@@ -683,7 +728,7 @@ class Schedule extends Wiget {
 
     this.deleteMode = !this.deleteMode
 
-    for (let item of element.querySelectorAll("item")) {
+    for (let item of this.list.querySelectorAll(".item")) {
       item.className = this.deleteMode ? "item delete" : "item"
       item.onclick = this.deleteMode ? () => {self.remove(item)} : () => {}
     }
@@ -691,667 +736,330 @@ class Schedule extends Wiget {
 
   // Update the schedule list
   update() {
-     
-  }
-}
+    this.list.innerHTML = ""
 
-/*
-let todoRemoved = [[], []]
-let todoIndex = 0
+    for (let time of this.times) {
+      // Create an element to add to the list
+      let li = document.createElement("LI")
+      li.innerHTML = !time.value ? time.time : `<b>${time.time}:</b> ${time.value}`
+      li.className = !time.value ? "time" : "item"
 
-// Hide the personal list
-todoLists[1].className = "hidden"
-
-// Show the work list and hide the personal one
-todoButtons[0].onclick = () => {
-  todoIndex = 0
-
-  todoLists[0].className = ""
-  todoLists[1].className = "hidden"
-}
-
-// Show the personal list and hide the work one
-todoButtons[1].onclick = () => {
-  todoIndex = 1
-
-  todoLists[0].className = "hidden"
-  todoLists[1].className = ""
-}
-
-// Delete an item from a list
-const removeTodoItem = element => {
-  todoRemoved[todoIndex].push(element)
-
-  let option = ["work", "personal"][todoIndex]
-  user.todo[option] = user.todo[option].filter(e => {return e !== element.innerText})
-  updateUser()
-
-  element.remove()
-}
-
-// Todo undo button
-todoUndo.onclick = () => {
-  if (todoRemoved.length === 0) return
-
-  todoLists[todoIndex].appendChild(todoRemoved[todoIndex][todoRemoved[todoIndex].length-1])
-  let val = todoRemoved[todoIndex].pop()
-
-  // Update the user
-  let option = ["work", "personal"][todoIndex]
-  user.todo[option].push(val)
-  updateUser()
-}
-
-// Todo add button
-todoAdd.onclick = () => {
-  // Add the input to the list and scroll so it's visible
-  todoLists[todoIndex].innerHTML += "<li><input type=text id=todo-add onfocusout=delTodoInput()></li>"
-  todoInfo.scrollTop = todoInfo.scrollHeight
-
-  // Find the input, focus it, and setup its onkeypress
-  let input = todoInfo.querySelector("input")
-  input.focus()
-  input.onkeypress = e => {
-    if (!e) e = window.event
-
-    if (e.key === "Enter") {
-      // Blur the input (which will delete it)
-      input.blur()
-
-      // Add the new item to the list
-      todoLists[todoIndex].innerHTML += `<li class=item onclick=removeTodoItem(this)>${input.value}</li>`
-
-// Update the user
-      let option = ["work", "personal"][todoIndex]
-      user.todo[option].push(input.value)
-      updateUser()
-    }
-  }
-}
-
-// Delete the input
-const delTodoInput = () => {
-  let elements = todoInfo.querySelectorAll("li")
-
-  for (let li of elements) {
-    if (li && li.querySelector("input")) {
-      li.remove()
-    }
-  }
-}
-*/
-
-/* Goals Wiget */
-/*
-let goalsRemoved = []
-
-// Delete parts of the list
-const removeGoalsItem = element => {
-  goalsRemoved.push(element)
-
-  user.goals = user.goals.filter(e => {return e !== element.innerText})
-  updateUser()
-
-  element.remove()
-}
-
-// Undo button
-goalsUndo.onclick = () => {
-  if (goalsRemoved.length === 0) return
-
-  goalsList.appendChild(goalsRemoved[goalsRemoved.length-1])
-  let val = goalsRemoved.pop()
-
-  user.goals.push(val)
-  updateUser()
-}
-
-// Add button
-goalsAdd.onclick = () => {
-  // Add the input to the list and scroll so it's visible
-  goalsList.innerHTML += "<li><input type=text id=goals-add onfocusout=delGoalsInput()></li>"
-  goalsList.scrollTop = goalsList.scrollHeight
-
-  // Find the input, focus it, and setup its onkeypress
-  let input = goalsList.querySelector("input")
-  input.focus()
-  input.onkeypress = e => {
-    if (!e) e = window.event
-
-    if (e.key === "Enter") {
-      // Blur the input (which will delete it)
-      input.blur()
-
-      // Add the new item to the list
-      goalsList.innerHTML += `<li class=item onclick=removeGoalsItem(this)>${input.value}</li>`
-
-      user.goals.push(input.value)
-      updateUser()
-    }
-  }
-}
-
-// Delete the input
-const delGoalsInput = () => {
-  let elements = goalsList.querySelectorAll("li")
-
-  for (let li of elements) {
-    if (li && li.querySelector("input")) {
-      li.remove()
-    }
-  }
-}
-*/
-
-// Day Wiget ------------------
-
-// Set the title of the wiget to the date
-/*
-let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-let prefixes = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"]
-
-let date = new Date()
-let apiDate = `${date.getMonth()+1} ${date.getDate()} ${date.getFullYear()}`
-let leapYear = ((date.getFullYear() % 4 == 0) && (date.getFullYear() % 100 != 0)) || (date.getFullYear() % 400 == 0) ? 1 : 0
-document.querySelector(".day .title").innerText = `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}${prefixes[date.getDate()%10]}, ${date.getFullYear()}`
-
-// Update the time in the wiget
-const setTime = () => {
-  let now = new Date()
-  let h = now.getHours()
-  let m = now.getMinutes()
-  let p = " AM"
-
-  if (h >= 12) {
-    if (h > 12) h -= 12
-
-    p = " PM"
-  } else if (h === 0) {
-    h = 12
-  }
-  if (m < 10) {
-    m = "0" + m
-  }
-
-  document.querySelector(".day #time").innerText = `${h}:${m} ${p}`
-}
-
-setInterval(setTime(), 1000)
-setTime()
-
-// Update the weather in the wiget
-const setWeather = async () => {
-  // Get the ip of the user
-  const ipRaw = await fetch("https://api.ipify.org/?format=json")
-  const ip = await ipRaw.json()
-
-  // Get the location of the user
-  const posRaw = await fetch(`https://ipapi.co/${ip.ip}/json`)
-  const pos = await posRaw.json()
-
-  // Get the weather data
-  const weatherRaw = await fetch(`https://api.openweathermap.org/data/2.5/weather?zip=${pos.postal}&APPID=${credentials.weather.key}`)
-  const weather = await weatherRaw.json()
-
-  // Update the weather div
-  document.querySelector(".day #weather").innerHTML = `${Math.floor((weather.main.temp - 273.15) * (9/5) + 32)} °F. ${weather.weather[0].description[0].toUpperCase() + weather.weather[0].description.substring(1)} <br><img src="https://openweathermap.org/img/wn/${weather.weather[0].icon}.png" />`
-}
-
-setInterval(setWeather(), 900000)
-setWeather()
-*/
-
-/* Schedule Wiget */
-/*
-const openEventMenu = () => {
-  scheduleList.style.filter = "blur(2px)"
-  scheduleInput.className = "input"
-}
-
-const closeEventMenu = () => {
-  scheduleList.style.filter = ""
-  scheduleInput.className = "input hidden"
-
-  scheduleInput.querySelector("#time").value = ""
-  scheduleInput.querySelector("#name").value = ""
-}
-
-scheduleAdd.onclick = openEventMenu
-scheduleEsc.onclick = closeEventMenu
-
-const scheduleNewEvent = () => {
-  let time = scheduleInput.querySelector("#time").value
-  let name = scheduleInput.querySelector("#name").value
-
-  closeEventMenu()
-
-  let timeSplits = time.split(":")
-
-  let suffix = " AM"
-  let minute = timeSplits[1]
-  let hour = timeSplits[0]
-
-  if (timeSplits[0] >= 12) {
-    suffix = " PM"
-    if (timeSplits[0] > 12) {
-      hour -= 12
-    }
-  } else if (timeSplits[0] === "00") {
-    hour = 12
-  } else if (timeSplits[0] < 10) {
-    hour = hour[1]
-  }
-
-  let timeString = `${hour}:${minute}${suffix}`
-
-  // Declare a new element
-  let li = document.createElement("LI")
-  li.innerHTML = `<strong>${timeString}:</strong> ${name}`
-  li.className = "item"
-
-  // Insert the element in specified hours
-  let items = []
-
-  let item = {"time": timeString, "value": name}
-  items.push(item)
-
-  for (let time of scheduleInfo.querySelectorAll("li")) {
-    if (time.innerText.split(":")[0] == hour && time.innerText.split(" ")[1][0] == suffix[1] && minute-time.innerText.split(":")[1].substring(0, 2) >= 0) {
-      time.insertAdjacentElement("afterend", li)
-    }
-    if (time.className === "item") {
-      let a = time.innerText.split(":")
-
-      items.push({"time": (a[0] + ":" + a[1].split(" ")[0] + " " + a[1].split(" ")[1]), "value": a[2]})
-    }
-  }
-  console.log(items)
-
-  // Insert the element if it is not in the specified hours
-  let found = false
-  if (suffix === " AM" && hour < 7) {
-    li.className += " pre-times"
-    for (let time of scheduleInfo.querySelectorAll(".pre-times")) {
-      if (hour-time.innerText.split(":")[0] > 0 && minute-time.innerText.split(":")[1].substring(0, 2) >= 0) {
-        time.insertAdjacentElement("afterend", li)
-        found = true
-      }
-    }
-
-    if (!found) {
-      if (scheduleInfo.querySelector(".pre-times")) {
-        scheduleInfo.querySelector(".pre-times").insertAdjacentElement("beforebegin", li)
-      } else {
-        scheduleInfo.querySelector(".time").insertAdjacentElement("beforebegin", li)
-      }
+      this.list.appendChild(li)
     }
   }
 
-  for (let i = 0; i < user.schedule.length; i++) {
-    if (user.schedule[i].date === apiDate) {
-      user.schedule[i].items = items
-      updateUser()
-      return
-    }
-  }
-  let day = {
-    "date": apiDate,
-    "items": items
-  }
-  user.schedule.push(day)
-  updateUser()
-}
+  save() {
+    if (!user) return 
 
-let scheduleDeleteMode = false
-scheduleDel.onclick = () => {
-  if (!scheduleDeleteMode) {
-    scheduleDeleteMode = true
-    for (let element of document.querySelectorAll(".schedule-times .item")) {
-      element.className = "item delete"
-      element.onclick = () => {
-        for (let i = 0; i < user.schedule.length; i++) {
-          if (user.schedule[i].date === apiDate) {
-            user.schedule[i].items = user.schedule[i].items.filter(e => {return e.time !== element.innerText.split(" ")[0]+" "+element.innerText.split(":")[1].split(" ")[1] && e.name !== element.innerText.split(":")[2]})
-          }
-        }
+    let time = new Time()
+    let times = this.times.filter(e => {return e.value})
+
+    for (let i = 0; i < user.schedule.length; i++) {
+      if (Time.compareDates(user.schedule[i].date, time.stamp) === -1) {
+        user.schedule[i].times = times
         updateUser()
-
-        element.remove()
+        return
       }
     }
-  } else {
-    scheduleDeleteMode = false
-    for (let element of document.querySelectorAll(".schedule-times .item")) {
-      element.className = "item"
-      element.onclick = () => {}
-    }
+
+    user.schedule.push({date: time.stamp, times: times})
+    updateUser()
   }
 }
-*/
+let scheduleWidget = new Schedule(10, 30, 25, 80, ".schedule")
 
-// Motivation Wiget
-let motivationIndex = 0
+class Motivation extends Widget {
+  // Instance variables
+  index = 0
+  fields = ["grateful", "goal", "targets", "great"]
 
-const motivationNextSlide = () => {
-  // Make the current slide hidden
-  motivationSlides[motivationIndex].className = "slide hidden"
-  motivationIcons[motivationIndex].className = "icon"
+  slides = []
+  iconElements = []
+  next
+  prev
+  saveButton
 
-  // Add one to the motivation index (or start the loop over)
-  motivationIndex++
-  if (motivationIndex === motivationSlides.length) motivationIndex = 0
+  constructor(x, y, width, height, id) {
+    super(x, y, width, height, id)
 
-  // Make the next slide visible
-  motivationSlides[motivationIndex].className = "slide"
-  motivationIcons[motivationIndex].className = "icon selected"
-}
-motivationNext.onclick = motivationNextSlide
+    // Get the elements from the DOM
+    this.slides = this.element.querySelectorAll(".slide")
+    this.iconElements = this.element.querySelectorAll(".icon")
+    this.next = this.element.querySelector("#next")
+    this.prev = this.element.querySelector("#prev")
+    this.saveButton = this.element.querySelector("#save")
 
-const motivationPrevSlide = () => {
-  // Make the current slide hidden
-  motivationSlides[motivationIndex].className = "slide hidden"
-  motivationIcons[motivationIndex].className = "icon"
+    // Set the onclick functions of the elements
+    this.next.onclick = () => this.nextSlide()
+    this.prev.onclick = () => this.prevSlide()
+    this.saveButton.onclick = () => this.save()
+  }
 
-  // Add one to the motivation index (or start the loop over)
-  motivationIndex--
-  if (motivationIndex === -1) motivationIndex = motivationSlides.length-1
+  nextSlide() {
+    // Hide the current slide and icon
+    this.slides[this.index].className = "slide hidden"
+    this.iconElements[this.index].className = "icon"
 
-  // Make the next slide visible
-  motivationSlides[motivationIndex].className = "slide"
-  motivationIcons[motivationIndex].className = "icon selected"
-}
-motivationPrev.onclick = motivationPrevSlide
+    // Increment the index
+    this.index++
+    if (this.index === this.slides.length) this.index = 0
 
-const motivationSaveValues = () => {
-  let index = -1
-  for (let i = 0; i < user.motivation.days.length; i++) {
-    if (user.motivation.days[i] && user.motivation.days[i].date === apiDate) {
-      index = i
+    // Make the next slide visible
+    this.slides[this.index].className = "slide"
+    this.iconElements[this.index].className = "icon selected"
+  }
+
+  prevSlide() {
+    // Hide the current slide and icon
+    this.slides[this.index].className = "slide hidden"
+    this.iconElements[this.index].className = "icon"
+
+    // Decrement the index
+    this.index--
+    if (this.index === -1) this.index = this.slides.length-1
+
+    // Make the previous slide visible
+    this.slides[this.index].className = "slide"
+    this.iconElements[this.index].className = "icon selected"
+  }
+
+  update(day) {
+    for (let i = 0; i < this.slides.length; i++) {
+      if (i !== 2) {
+        this.slides[i].querySelector("textarea").innerText = day[this.fields[i]]
+      } else {
+        let inputs = this.slides[i].querySelectorAll("textarea")
+        for (let j = 0; j < day[this.fields[i]].length; j++) {
+          inputs[j].innerText = day[this.fields[i]][j]
+        }
+      }
     }
   }
-  if (index === -1) {
-    index = user.motivation.days.length
 
-    user.motivation.days.push({
-      "date": apiDate,
-      "grateful": "",
-      "goal": "",
-      "targets": [],
-      "great": ""
+  save() {
+    // Find if the motivation exists for the current day
+    let time = new Time()
+    let index = -1
+
+    for (let i = 0; i < user.motivation.length; i++) {
+      if (Time.compareDates(time.stamp, user.motivation[i]) === -1) {
+        index = i
+        break
+      }
+    }
+
+    // If there is no index, push a new day to the user's data
+    if (index === -1) {
+      index = user.motivation.length
+
+      user.motivation.push({
+        "date": time.stamp,
+        "grateful": "",
+        "goal": "",
+        "targets": [],
+        "great": "",
+      })
+    }
+
+    // Set the user's info equal to the values of the textareas
+    for (let i = 0; i < this.fields.length; i++) {
+      if (i !== 2) {
+        // Push the value to the user's data
+        user.motivation[index][this.fields[i]] = this.slides[i].querySelector("textarea").value
+      } else {
+        // Push the three target values to it's corresponding array
+        let values = []
+        for (let e of this.slides[i].querySelectorAll("textarea")) {
+          values.push(e.value)
+        }
+        user.motivation[index][this.fields[i]] = values
+      }
+    }
+    updateUser()
+  }
+}
+let motivationWidget = new Motivation(68, 20, 30, 32, "#motivation")
+
+class Habit extends Widget {
+  // Instance variables
+  deleteMode = false
+  habits = []
+  dates = []
+  firstDate = []
+
+  utils = []
+  tbody
+  thead
+  
+  constructor(x, y, width, height, id) {
+    super(x, y, width, height, id)
+
+    // Get the elements from the DOM
+    this.utils = [this.element.querySelector("#del"), this.element.querySelector("#add")]
+    this.tbody = this.element.querySelector("tbody")
+    this.thead = this.element.querySelector("#dates")
+
+    // Set the date headers for the table
+    let t = new Time()
+    for (let date of t.weekSpan()) {
+      this.dates.push(date)
+
+      let th = document.createElement("TH")
+      th.innerText = date
+      this.thead.appendChild(th)
+    }
+
+    this.firstDate = [t.stamp[0], t.weekSpan()[0].split("/")[1], t.stamp[2]]
+
+    // Set the onclicks of the elements
+    this.utils[0].onclick = () => this.delete()
+    this.utils[1].onclick = () => this.add()
+
+  }
+
+  add() {
+    if (this.deleteMode) return
+
+    // Add an input to the habits widget
+    let input = document.createElement("INPUT")
+    input.type = "text"
+    this.tbody.appendChild(input)
+
+    input.onkeypress = e => {
+      if (!e) return
+
+      if (e.key === "Enter") {
+        // Blur and delete the input
+        input.blur()
+
+        // Add the new list item and update the widget
+        let t = new Time()
+
+        let val = ""
+        for (let i = 0; i < this.dates.length; i++) val += "_"
+
+        this.habits.push({
+          "date": this.firstDate,
+          "name": input.value,
+          "value": val,
+        })
+        this.update()
+      }
+    }
+
+    input.focus()
+    input.addEventListener("focusout", e => {
+      if (e) input.remove()
     })
   }
 
-  let fields = ["grateful", "goal", "targets", "great"]
-  for (let i = 0; i < fields.length; i++) {
-    if (fields[i] !== "targets") {
-      user.motivation.days[index][fields[i]] = motivationSlides[i].querySelector("textarea").value
-    } else {
-      let values = []
-      for (let element of motivationSlides[i].querySelectorAll("textarea")) {
-        values.push(element.value)
-      }
-      user.motivation.days[index][fields[i]] = values
-    }
-  }
-  updateUser()
-}
-motivationSave.onclick = motivationSaveValues
+  delete() {
+    this.deleteMode = !this.deleteMode
 
-// Habits Wiget ----------------
-let habitsDeleteMode = false
+    if (this.deleteMode) {
+      for (let habit of this.tbody.querySelectorAll(".head")) {
+        habit.className = "head delete"
 
-const habitsDeleteModeHandler = () => {
-  if (!habitsDeleteMode) {
-    habitsDeleteMode = true
-    for (let element of document.querySelectorAll(".habits tbody .head")) {
-      element.className = "head delete"
-      element.onclick = () => {
-        for (let tr of document.querySelectorAll(".habits tbody tr")) {
-          if (tr.querySelector(".head") && tr.querySelector(".head").innerText === element.innerText) {
-            for (let i = 0; i < user.habits.length; i++) {
-              if (user.habits[i].name === element.innerText) {
-                user.habits = user.habits.filter(e => {return e.name !== element.innerText})
-                updateUser()
-              }
+        habit.onclick = () => {
+          for (let tr of this.tbody.querySelectorAll("tr")) {
+            if (tr.querySelector(".head") && tr.querySelector(".head").innerText === habit.innerText) {
+              this.habits = this.habits.filter(e => {return e.name !== habit.innerText})
+
+              tr.remove()
+              return
             }
-
-            tr.remove()
-            return
           }
         }
       }
-    }
-  } else {
-    habitsDeleteMode = false
-    for (let element of document.querySelectorAll(".habits tbody .head")) {
-      element.className = "head"
-      element.onclick = () => {}
-    }
-  }
-}
-
-habitsDel.onclick = habitsDeleteModeHandler
-
-habitsAdd.onclick = () => {
-  if (habitsDeleteMode) habitsDeleteModeHandler()
-
-  // Add the input to the list and scroll so it's visible
-  habitsInfo.innerHTML += `<input type=text onfocusout=habitsInfo.querySelector("input").remove()>`
-  habitsInfo.scrollTop = habitsInfo.scrollHeight
-
-  // Find the input, focus it, and setup its onkeypress
-  let input = habitsInfo.querySelector("input")
-  input.focus()
-  input.onkeypress = e => {
-    if (!e) e = window.event 
-    if (e.key === "Enter") {
-      // Blur the input (which will delete it)
-      input.blur()
-
-      // Add the new item to the list
-      let html = ""
-      html += `<tr><td class=head>${input.value}</td>`
-      for (let i = 0; i < 15; i++) {
-        html += "<td class=item onclick=handleHabitCell(this)></td>"
-      }
-      html += "</tr>"
-      document.querySelector(".habits-info tbody").innerHTML += html
-
-      let habit = {
-        "name": input.value,
-        "start": apiDate,
-        "value": ""
-      }
-      user.habits.push(habit)
-      updateUser()
-    }
-  }
-}
-
-const handleHabitCell = element => {
-  if (!element.innerText) {
-    element.innerText = "X"
-  } else if (element.innerText === "X") {
-    element.innerText = "/"
-  } else {
-    element.innerText = ""
-  }
-
-  let habit
-  let name = element.parentElement.querySelector(".head").innerText
-  for (let i = 0; i < user.habits.length; i++) {
-    if (user.habits[i].name === name) {
-      habit = i 
-    }
-  }
-
-  let heads = document.querySelectorAll(".habits-info th")
-  let index = 0
-  let match
-  for (let i = 0; i < heads.length; i++) {
-    let a = heads[i].innerText.split("/")
-    let b = user.habits[habit].start.split(" ")
-    if (a[0] + " " + a[1] === b[0] + " " + b[1]) {
-      index = i
-      match = a
-    }
-  }
-
-  let value = ""
-  let items = element.parentElement.querySelectorAll(".item")
-  for (let i = 0; i < items.length; i++) {
-
-    if (items[i].innerText === "") {
-      if (i+1 < index) continue
-
-      value += "_"
     } else {
-      value += items[i].innerText
-      if (i+1 < index && user.habits[habit].start.split(" ")[1] > (i+1)) {
-        user.habits[habit].start = match[0] + " " + (i+1) + " " + date.getFullYear()
+      this.deleteMode = false
+      for (let habit of this.tbody.querySelectorAll(".head")) {
+        habit.className = "head"
+        habit.onclick = () => {}
       }
     }
   }
-  user.habits[habit].value = value
-  updateUser()
+
+  handleHabitCell(self, element) {
+    if (!element.innerText) {
+      element.innerText = "X"
+    } else if (element.innerText === "X") {
+      element.innerText = "/"
+    } else {
+      element.innerText = ""
+    }
+
+    self.save()
+  }
+
+  update() {
+    this.tbody.innerHTML = `<tr id="dates">${this.thead.innerHTML}</tr>`
+    let t = new Time()
+
+    for (let habit of this.habits) {
+      let tr = document.createElement("TR")
+      tr.className = "habit"
+
+      let th = document.createElement("TD")
+      th.className = "head"
+      th.innerText = habit.name
+      tr.appendChild(th)
+
+      // Get the start position of the habit's value
+      let date = habit.date
+      let start = 0
+
+      if (habit.value.length > this.dates.length) {
+        while (date[2] < t.stamp[2]) {
+          start += 365+Time.isLeapYear(date[2])
+          date[2]++
+        }
+        while (date[0] < t.stamp[0]) {
+          start += t.dayCounts[date[0]-1]
+          date[0]++
+        }
+        if (date[1] > 14) start += 14
+      }
+
+      for (let i = 0; i < this.dates.length; i++) {
+        if (start > 0) habit.value = habit.value.substring(start)
+
+        // Add a cell to the habit
+        let td = document.createElement("TD")
+        td.className = "item"
+        td.onclick = () => this.handleHabitCell(this, td)
+        td.innerText = habit.value[i] === "_" ? "" : habit.value[i]
+        tr.appendChild(td)
+      }
+      this.tbody.appendChild(tr)
+    }
+
+    this.save()
+  }
+
+  save() {
+    user.habits = []
+
+    let t = new Time()
+    let startDate = [this.dates[0].split("/")[1], t.stamp[0], t.stamp[2]]
+
+    let trs = this.tbody.querySelectorAll(".habit")
+    for (let i = 0; i < trs.length; i++) {
+      if (Time.compareDates(this.habits[i].date, startDate)) this.habits[i].date = startDate
+
+      this.habits[i].value = ""
+      for (let td of trs[i].querySelectorAll(".item")) {
+        this.habits[i].value += td.innerText === "" ? "_" : td.innerText
+
+      }
+
+      user.habits.push(this.habits[i])
+    }
+
+    updateUser()
+  }
 }
-
-// Update the UI with information from the api
-const updateUi = () => {
-  // Todo Wiget
-  let options = ["work", "personal"]
-  let todoHtml = ""
-  for (let i = 0; i < options.length; i++) {
-    for (let item of user.todo[options[i]]) {
-      todoHtml += `<li class=item onclick=removeTodoItem(this)>${item}</li>`
-    }
-    todoLists[i].innerHTML = todoHtml
-    todoHtml = ""
-  }
-
-  // Goals Wiget
-  let goalHtml = ""
-  for (let item of user.goals) {
-    goalHtml += `<li class=item onclick=removeGoalsItem(this)>${item}</li>`
-  }
-  goalsList.innerHTML = goalHtml
-
-
-  // Schedule Wiget
-  let day  
-  for (let d of user.schedule) {
-    if (d.date === apiDate) {
-      day = d
-    }
-  }
-
-  if (day) {
-    for (let item of day.items) {
-      let li = document.createElement("LI")
-      li.innerHTML = `<strong>${item.time}:</strong> ${item.value}`
-      li.className = "item"
-
-      let found = false
-      for (let time of scheduleInfo.querySelectorAll("li")) {
-        if (time.innerText.split(":")[0] == item.time.split(":")[0] && time.innerText.split(" ")[1][0] == item.time.split(" ")[1][0] && item.time.split(":")[1].split(" ")[0]-time.innerText.split(":")[1].substring(0, 2) >= 0) {
-          time.insertAdjacentElement("afterend", li)
-          found = true
-        }
-      }
-
-      if (found) continue
-
-      li.className += " pre-times"
-      for (let time of scheduleInfo.querySelectorAll(".pre-times")) {
-        if (item.time.split(":")[0]-time.innerText.split(":")[0] > 0 && item.time.split(":")[1].split(" ")[0]-time.innerText.split(":")[1].substring(0, 2) >= 0) {
-          time.insertAdjacentElement("afterend", li)
-          found = true
-        }
-      }
-
-      if (found) continue
-
-      if (scheduleInfo.querySelector(".pre-times")) {
-        scheduleInfo.querySelector(".pre-times").insertAdjacentElement("beforebegin", li)
-      } else {
-        scheduleInfo.querySelector(".time").insertAdjacentElement("beforebegin", li)
-      }
-    }
-  }
-
-  // Motivation Wiget
-  let index = -1
-  for (let i = 0; i < user.motivation.days.length; i++) {
-    if (user.motivation.days[i] && user.motivation.days[i].date === apiDate) {
-      index = i
-    }
-  }
-
-  if (index !== -1) {
-    let fields = ["grateful", "goal", "targets", "great"]
-    for (let i = 0; i < fields.length; i++) {
-      if (fields[i] !== "targets") {
-        motivationSlides[i].querySelector("textarea").value = user.motivation.days[index][fields[i]]
-      } else {
-        let elements = motivationSlides[i].querySelectorAll("textarea")
-        for (let j = 0; j < elements.length; j++) {
-          elements[j].value = user.motivation.days[index][fields[i]][j]
-        }
-      }
-    }
-  }
-
-  // Habits Wiget
-  let month = apiDate.split(" ")[0]
-
-  let monthDays = [31, 28+leapYear, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-  let startDay = 1, endDay = 14
-  if (apiDate.split(" ")[1] > 14) {
-    startDay = 15
-    endDay = monthDays[month-1]
-  }
-  for (let i = startDay; i <= endDay; i++) {
-    habitsInfo.querySelector("#dates").innerHTML += `<th>${month}/${i}</th>`
-  }
-
-  let html = ""
-  for (let habit of user.habits) {
-    html += `<tr><td class=head>${habit.name}</td>`
-
-    let data = habit.value
-
-    let startYear = habit.start.split(" ")[2]
-    while (startYear < apiDate.split(" ")[2]) {
-      data = data.substring(365+leapYear)
-      startYear++
-    }
-
-    let startMonth = habit.start.split(" ")[0]
-    while (startMonth < apiDate.split(" ")[0]) {
-      data = data.substring(monthDays[startMonth-1])
-      startMonth++
-    }
-
-
-    let start = habit.start.split(" ")[1]
-    for (let i = 0; i < endDay-startDay+1; i++) {
-      let val = ""
-      if (i >= start-1) {
-        if (habit.value[i-start+1] && habit.value[i-start+1] !== "_") {
-          val = data[i-start+1]
-        }
-      }
-
-      html += `<td class=item onclick=handleHabitCell(this)>${val}</td>`
-    }
-
-    html += `</tr>`
-
-  }
-  habitsInfo.querySelector("tbody").innerHTML += html
-
-}
+let habitsWidget = new Habit(0, 0, 0, 0, "#habits")
 
 // Update the api with the user's information
 const updateUser = () => {
@@ -1398,13 +1106,42 @@ xml2.onload = () => {
     //updateUi()
   }
 
-  todoWiget.lists = [user.todo.work, user.todo.personal]
-  todoWiget.update()
+  // Create a new time for time-dependent widgets
+  let time = new Time()
 
-  goalsWiget.list = user.goals
-  goalsWiget.update()
+  // Update the Todo Widget
+  todoWidget.lists = [user.todo.work, user.todo.personal]
+  todoWidget.update()
 
-  ambientWiget.setWeather()
+  // Update the Goals Widget
+  goalsWidget.list = user.goals
+  goalsWidget.update()
+
+  // Set the weather of the ambient widget
+  ambientWidget.setWeather()
+
+  // Add the user's habit data to the widget
+  habitsWidget.habits = user.habits 
+  habitsWidget.update()
+
+  // Add the user's schedule items to the widget
+  for (let day of user.schedule) {
+    if (Time.compareDates(day.date, time.stamp) === -1) {
+      scheduleWidget.times = scheduleWidget.times.concat(day.times)
+      scheduleWidget.times = scheduleWidget.times.sort((a, b) => {return Time.compare(b.rawTime, a.rawTime) ? -1 : 1})
+      break
+    }
+  }
+  scheduleWidget.update()
+
+  // Add the user's motivational values to the widget
+  for (let day of user.motivation) {
+    if (Time.compareDates(day.date, time.stamp) === -1) {
+      motivationWidget.update(day)
+    }
+  }
+
+
 }
 
 xml2.open("GET", url)

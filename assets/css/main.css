@@ -390,7 +390,7 @@ main .day {
   border-radius: 50%;
 }
 
-.day .motivation {
+.day #motivation {
   position: absolute;
   right: 0;
   top: 20vh;
@@ -398,25 +398,25 @@ main .day {
   height: 32vh;
 }
 
-.motivation .title {
+#motivation .title {
   font-size: 2em;
   margin-bottom: 0;
 }
 
-.motivation .motivation-info {
+#motivation .motivation-info {
   height: 26vh;
   width: 30vw;
   border: solid 2px var(--line-color);
 }
 
-.motivation p {
+#motivation p {
   margin-top: 3vh;
   font-family: Verdana, "Noto Sans",  sans-serif;
   font-size: 1.4em; 
   color: var(--text-color);
 }
 
-.motivation textarea {
+#motivation textarea {
   width: 20vw;
   height: 13vh;
   font-family: Verdana, "Noto Sans",  sans-serif;
@@ -429,16 +429,16 @@ main .day {
   margin-top: 1em;
 }
 
-.motivation #targets p {
+#motivation #targets p {
   margin-top: 1vh;
 }
 
-.motivation #targets textarea {
+#motivation #targets textarea {
   height: 3.5vh;
   padding: 0.25vh;
 }
 
-.motivation .motivation-slide-icons {
+#motivation .motivation-slide-icons {
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
@@ -461,7 +461,7 @@ main .day {
   color: var(--hover-color);
 }
 
-.motivation #save {
+#motivation #save {
   position: absolute;
   left: 0;
   bottom: 0;
@@ -470,7 +470,7 @@ main .day {
   padding: 0.6em;
 }
 
-.motivation #prev {
+#motivation #prev {
   font-size: 0.6em;
   position: absolute;
   left: 0;
@@ -478,12 +478,12 @@ main .day {
   margin-left: 0.75vw;
 }
 
-.motivation #prev:after {
+#motivation #prev:after {
   font-family: FontAwesome;
   content: '\f053';
 }
 
-.motivation #next {
+#motivation #next {
   font-size: 0.6em;
   position: absolute;
   right: 0;
@@ -491,7 +491,7 @@ main .day {
   margin-right: 0.5vw;
 }
 
-.motivation #next:after {
+#motivation #next:after {
   font-family: FontAwesome;
   content: '\f054';
 }
@@ -633,7 +633,7 @@ main .day {
 }
 
 /* Habits wiget */
-main .habits {
+main #habits {
   position: absolute;
   top: 55vh;
   right: 12vw;
@@ -691,36 +691,36 @@ main .habits {
   padding: 0.2em;
 }
 
-.habits #add {
+#habits #add {
   float: right;
   font-size: 1em;
   margin-right: 1em;
   margin-top: 0.4em;
 }
 
-.habits #add:after {
+#habits #add:after {
   font-family: FontAwesome;
   content: '\f067';
 }
 
-.habits #del {
+#habits #del {
   float: left;
   font-size: 1em;
   margin-top: 0.4em;
   margin-left: 1em;
 }
 
-.habits #del:after {
+#habits #del:after {
   font-family: FontAwesome;
   content: '\f1f8';
 }
 
-.habits .delete {
+#habits .delete {
   text-decoration: line-through;
   cursor: pointer;
 }
 
-.habits .delete:hover {
+#habits .delete:hover {
   color: var(--hover-color);
 }
 
