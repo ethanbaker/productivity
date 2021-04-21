@@ -6,7 +6,7 @@
     session_start();
   }
 
-  if (!isset($_SESSION["id"])) {
+  if (!isset($_SESSION["id"]) && isset($_GET["DEMO"])) {
     header("location: https://login.ethanbaker.dev/");
   }
 
