@@ -1,5 +1,4 @@
-let user
-let credentials
+let session
 /*
   // Small navigation menu ---------
 
@@ -40,10 +39,6 @@ for (let v of links) {
   v.onclick = closeMenu
 }
 */
-
-// Local storage
-let cache = JSON.parse(localStorage.getItem("ethanbaker.dev"))
-if (!cache) cache = {mode: "dark"}
 
 /* Used for time keeping */
 class Time {
@@ -121,8 +116,6 @@ class Time {
       hours = 12
     }
 
-    minutes += "" + minutes < 10 ? 0 : ""
-
     return `${hours}:${minutes} ${prefix}`
   }
 
@@ -175,29 +168,19 @@ class Mode {
   // Instance variables
   button
   mode
-  self
 
   constructor(id) {
-    // Get the local cache data from the user and set the UI theme
-    // accordingly
-    !cache.mode ? cache.mode = "dark" : false
-    cache.mode === "dark" ? this.setDark() : this.setLight()
-    this.mode = cache.mode
-
     // Get the button from the document and set its onclick function
     this.button = document.querySelector("#" + id)
     this.button.onclick = () => this.toggleMode()
-  }
 
-  // Save the user's current cache to their local storage
-  save() {
-    localStorage.setItem("ethanbaker.dev", JSON.stringify(cache))
+    this.update()
   }
 
   // Set the UI to dark mode
   setDark() {
     this.mode = "dark"
-    cache.mode = "dark"
+    session.cache.mode = "dark"
 
     html.style.setProperty("--bg-color", "#292929")
     html.style.setProperty("--text-color", "#eeeeee")
@@ -209,7 +192,7 @@ class Mode {
   // Set the UI to light mode
   setLight() {
     this.mode = "light"
-    cache.mode = "light"
+    session.cache.mode = "light"
 
     html.style.setProperty("--text-color", "#292929")
     html.style.setProperty("--bg-color", "#eeeeee")
@@ -222,27 +205,17 @@ class Mode {
   toggleMode() {
     this.mode === "light" ? this.setDark() : this.setLight()
 
-    this.save()
-  }
-}
-
-let mode = new Mode("mode-button")
-
-/* User Session */
-class Session {
-  // Instance variables
-  #_token
-
-  constructor(token) {
-    this.#_token = token
+    session.updateCache()
   }
 
-  updateUi() {
+  // Update the mode based on the user's cache value
+  update() {
+    if (!session) return
 
-  }
-
-  updateApi() {
-
+    // Get the local cache data from the user and set the UI theme accordingly
+    !session.cache.mode ? session.cache.mode = "dark" : false
+    session.cache.mode === "dark" ? this.setDark() : this.setLight()
+    this.mode = session.cache.mode
   }
 }
 
@@ -433,12 +406,12 @@ class Todo extends Widget {
   }
 
   save() {
-    if (!user) return
+    if (!session || !session.data) return
 
-    user.todo.work = this.lists[0]
-    user.todo.personal = this.lists[1]
+    session.data.todo.work = this.lists[0]
+    session.data.todo.personal = this.lists[1]
 
-    updateUser()
+    session.updateApi()
   }
 
   // Accessor Methods
@@ -452,7 +425,6 @@ class Todo extends Widget {
   }
 }
 
-let todoWidget = new Todo(0, 0, 25, 50, "#todo")
 
 class Goals extends Widget {
   // Instance variables
@@ -550,15 +522,14 @@ class Goals extends Widget {
   }
 
   save() {
-    if (!user) return
+    if (!session.data) return
 
-    user.goals = this.list
+    session.data.goals = this.list
 
-    updateUser()
+    session.updateApi()
   }
 }
 
-let goalsWidget = new Goals(2, 55, 25, 40, "#goals")
 
 class Ambient extends Widget {
   // Instance variables
@@ -599,14 +570,14 @@ class Ambient extends Widget {
   }
 
   async setWeather() {
-    if (!credentials) return
+    if (!session || !session.credentials) return
 
     // Get the position of the user
-    let posRaw = await fetch(`https://api.ipdata.co?api-key=${credentials.ip.key}`)
+    let posRaw = await fetch(`https://api.ipdata.co?api-key=${session.credentials.ip.key}`)
     let pos = await posRaw.json()
 
     // Get the weather data
-    let weatherRaw = await fetch(`https://api.openweathermap.org/data/2.5/weather?zip=${pos.postal}&APPID=${credentials.weather.key}`)
+    let weatherRaw = await fetch(`https://api.openweathermap.org/data/2.5/weather?zip=${pos.postal}&APPID=${session.credentials.weather.key}`)
     let weather = await weatherRaw.json()
 
     // Update the weather div
@@ -614,7 +585,6 @@ class Ambient extends Widget {
   }
 }
 
-let ambientWidget = new Ambient(65, 0, 35, 10, "#ambient")
 
 class Schedule extends Widget {
   // Instance variables
@@ -637,7 +607,7 @@ class Schedule extends Widget {
     for (let hour = 7; hour < 25; hour++) {
       this.times.push({
         rawTime: hour%25+":00",
-        time: Time.convert24to12(hour%25+":0"),
+        time: Time.convert24to12(hour%25+":00"),
         default: true,
       })
     }
@@ -746,24 +716,23 @@ class Schedule extends Widget {
   }
 
   save() {
-    if (!user) return 
+    if (!session || !session.data) return
 
     let time = new Time()
     let times = this.times.filter(e => {return e.value})
 
-    for (let i = 0; i < user.schedule.length; i++) {
-      if (Time.compareDates(user.schedule[i].date, time.stamp) === -1) {
-        user.schedule[i].times = times
-        updateUser()
+    for (let i = 0; i < session.data.schedule.length; i++) {
+      if (Time.compareDates(session.data.schedule[i].date, time.stamp) === -1) {
+        session.data.schedule[i].times = times
+        session.updateApi()
         return
       }
     }
 
-    user.schedule.push({date: time.stamp, times: times})
-    updateUser()
+    session.data.schedule.push({date: time.stamp, times: times})
+    session.updateApi()
   }
 }
-let scheduleWidget = new Schedule(10, 30, 25, 80, ".schedule")
 
 class Motivation extends Widget {
   // Instance variables
@@ -834,12 +803,14 @@ class Motivation extends Widget {
   }
 
   save() {
+    if (!session || !session.data) return
+
     // Find if the motivation exists for the current day
     let time = new Time()
     let index = -1
 
-    for (let i = 0; i < user.motivation.length; i++) {
-      if (Time.compareDates(time.stamp, user.motivation[i]) === -1) {
+    for (let i = 0; i < session.data.motivation.length; i++) {
+      if (Time.compareDates(time.stamp, session.data.motivation[i]) === -1) {
         index = i
         break
       }
@@ -847,9 +818,9 @@ class Motivation extends Widget {
 
     // If there is no index, push a new day to the user's data
     if (index === -1) {
-      index = user.motivation.length
+      index = session.data.motivation.length
 
-      user.motivation.push({
+      session.data.motivation.push({
         "date": time.stamp,
         "grateful": "",
         "goal": "",
@@ -862,20 +833,19 @@ class Motivation extends Widget {
     for (let i = 0; i < this.fields.length; i++) {
       if (i !== 2) {
         // Push the value to the user's data
-        user.motivation[index][this.fields[i]] = this.slides[i].querySelector("textarea").value
+        session.data.motivation[index][this.fields[i]] = this.slides[i].querySelector("textarea").value
       } else {
         // Push the three target values to it's corresponding array
         let values = []
         for (let e of this.slides[i].querySelectorAll("textarea")) {
           values.push(e.value)
         }
-        user.motivation[index][this.fields[i]] = values
+        session.data.motivation[index][this.fields[i]] = values
       }
     }
-    updateUser()
+    session.updateApi()
   }
 }
-let motivationWidget = new Motivation(68, 20, 30, 32, "#motivation")
 
 class Habit extends Widget {
   // Instance variables
@@ -887,7 +857,7 @@ class Habit extends Widget {
   utils = []
   tbody
   thead
-  
+
   constructor(x, y, width, height, id) {
     super(x, y, width, height, id)
 
@@ -1035,7 +1005,9 @@ class Habit extends Widget {
   }
 
   save() {
-    user.habits = []
+    if (!session || !session.data) return
+
+    session.data.habits = []
 
     let t = new Time()
     let startDate = [this.dates[0].split("/")[1], t.stamp[0], t.stamp[2]]
@@ -1050,96 +1022,164 @@ class Habit extends Widget {
 
       }
 
-      user.habits.push(this.habits[i])
+      session.data.habits.push(this.habits[i])
     }
 
-    updateUser()
+    session.updateApi()
   }
 }
-let habitsWidget = new Habit(0, 0, 0, 0, "#habits")
 
-// Update the api with the user's information
-const updateUser = () => {
-  let xml = new XMLHttpRequest()
+/* User Session */
+class Session {
+  // Instance variables
+  #token
+  #_credentials
+  #_cache // Local storage
+  #_data
 
-  xml.responseType = "json"
-  //xml.onload = () => {console.log(xml.response)}
+  todo
+  goals
+  ambient
+  schedule
+  habits
+  motivation
 
-  xml.open("PUT", "https://api.ethanbaker.dev/" + TOKEN)
-  xml.send(JSON.stringify(user))
-}
+  mode
 
-/* XML Requests */
-let xml1 = new XMLHttpRequest()
-let url = "/assets/credentials.json"
+  constructor(token) {
+    this.#token = token
 
-xml1.responseType = "json"
-xml1.onload = () => {
-  credentials = xml1.response
-}
+    // Initialize all of the widgets
+    this.todo = new Todo(0, 0, 25, 50, "#todo")
+    this.goals = new Goals(2, 55, 25, 40, "#goals")
+    this.schedule = new Schedule(10, 30, 25, 80, ".schedule")
+    this.motivation = new Motivation(68, 20, 30, 32, "#motivation")
+    this.ambient = new Ambient(65, 0, 35, 10, "#ambient")
+    this.habits = new Habit(0, 0, 0, 0, "#habits")
 
-xml1.open("GET", url)
-xml1.send()
+    // Initialize other elements
+    this.mode = new Mode("mode-button")
 
-// Get the user's data from the productivity api. If the user has no data, create it for the user
-let xml2 = new XMLHttpRequest()
-url = "https://api.ethanbaker.dev/" + TOKEN
+    // Local storage
+    this.cache = JSON.parse(localStorage.getItem("ethanbaker.dev"))
+    if (!this.cache) this.cache = {mode: "dark"}
 
-xml2.responseType = "json"
-xml2.onload = () => {
-  user = xml2.response
+    // Get the credentials for apis
+    let xmlGet = new XMLHttpRequest()
+    let url = "/assets/credentials.json"
 
-  // Create a new user if the current user doesn't exist
-  if (!user) {
-    let xml3 = new XMLHttpRequest()
-    xml3.responseType = "json"
-    xml3.onload = () => {
-      user = xml3.response
-      //updateUi()
+    xmlGet.responseType = "json"
+    xmlGet.onload = () => {
+      this.#_credentials = xmlGet.response
     }
-    xml3.open("POST", url)
-    xml3.send(TOKEN)
-  } else {
-    //updateUi()
+
+    xmlGet.open("GET", url)
+    xmlGet.send()
   }
 
-  // Create a new time for time-dependent widgets
-  let time = new Time()
+  // Get the data from the api
+  getApi() {
+    // Initial xml request to see if the user already has data
+    let xmlGet = new XMLHttpRequest()
+    let url = "https://api.ethanbaker.dev/" + this.#token
 
-  // Update the Todo Widget
-  todoWidget.lists = [user.todo.work, user.todo.personal]
-  todoWidget.update()
+    xmlGet.responseType = "json"
+    xmlGet.onload = () => {
+      this.data = xmlGet.response
 
-  // Update the Goals Widget
-  goalsWidget.list = user.goals
-  goalsWidget.update()
+      // Create a new user if the current user doesn't exist
+      if (!session.data) {
+        let xmlPost = new XMLHttpRequest()
+        xmlPost.responseType = "json"
+        xmlPost.onload = () => {
+          this.data = xmlPost.response
+          this.updateUi()
+        }
 
-  // Set the weather of the ambient widget
-  ambientWidget.setWeather()
-
-  // Add the user's habit data to the widget
-  habitsWidget.habits = user.habits 
-  habitsWidget.update()
-
-  // Add the user's schedule items to the widget
-  for (let day of user.schedule) {
-    if (Time.compareDates(day.date, time.stamp) === -1) {
-      scheduleWidget.times = scheduleWidget.times.concat(day.times)
-      scheduleWidget.times = scheduleWidget.times.sort((a, b) => {return Time.compare(b.rawTime, a.rawTime) ? -1 : 1})
-      break
+        // Send the xml post request
+        xmlPost.open("POST", url)
+        xmlPost.send(TOKEN)
+      } else {
+        this.updateUi()
+      }
     }
-  }
-  scheduleWidget.update()
 
-  // Add the user's motivational values to the widget
-  for (let day of user.motivation) {
-    if (Time.compareDates(day.date, time.stamp) === -1) {
-      motivationWidget.update(day)
+    // Send the xml get request
+    xmlGet.open("GET", url)
+    xmlGet.send()
+  }
+
+  updateUi() {
+    // Update the mode button
+    this.mode.update()
+
+    // Create a new time for time-dependent widgets
+    let time = new Time()
+
+    // Update the Todo Widget
+    this.todo.lists = [this.data.todo.work, this.data.todo.personal]
+    this.todo.update()
+
+    // Update the Goals Widget
+    this.goals.list = this.data.goals
+    this.goals.update()
+
+    // Set the weather of the ambient widget
+    this.ambient.setWeather()
+
+    // Add the user's habit data to the widget
+    this.habits.habits = this.data.habits 
+    this.habits.update()
+
+    // Add the user's schedule items to the widget
+    for (let day of this.data.schedule) {
+      if (Time.compareDates(day.date, time.stamp) === -1) {
+        this.schedule.times = this.schedule.times.concat(day.times)
+        this.schedule.times = this.schedule.times.sort((a, b) => {return Time.compare(b.rawTime, a.rawTime) ? -1 : 1})
+        break
+      }
     }
+    this.schedule.update()
+
+    // Add the user's motivational values to the widget
+    for (let day of this.data.motivation) {
+      if (Time.compareDates(day.date, time.stamp) === -1) {
+        this.motivation.update(day)
+      }
+    }
+
   }
 
+  // Update the user's information to the api
+  updateApi() {
+    let xml = new XMLHttpRequest()
 
+    xml.responseType = "json"
+
+    xml.open("PUT", "https://api.ethanbaker.dev/" + this.#token)
+    xml.send(JSON.stringify(this.data))
+  }
+
+  // Save the user's current cache to their local storage
+  updateCache() {
+    localStorage.setItem("ethanbaker.dev", JSON.stringify(this.cache))
+  }
+
+  // Accessor Methods
+  get data() {
+    return this.#_data
+  }
+
+  get credentials() {
+    return this.#_credentials
+  }
+
+  // Mutator Methods
+  set data(d) {
+    this.#_data = d 
+  }
 }
 
-xml2.open("GET", url)
-xml2.send()
+/* For testing */
+session = new Session("DEMO")
+session.getApi()

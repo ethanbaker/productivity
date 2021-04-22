@@ -10,7 +10,7 @@
     header("location: https://login.ethanbaker.dev/");
   }
 
-  echo "<script>let SESSION = new Session(\"".$_SESSION["token"]."\")</script>";
+  echo "<script>let session = new Session(\"".$_SESSION["token"]."\")</script>";
 
   require_once "./productivity.html";
 

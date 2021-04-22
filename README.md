@@ -1,16 +1,28 @@
 # Productivity GUI
 
-This is a productivity tool GUI in the web browser. A REST Api is used to save data entered by the user. Currently, only registered users can use the system.
+A productivity tool built with Javascript in the web browser, found here [https://productivity.ethanbaker.dev](https://productivity.ethanbaker.dev). 
 
-Check out the [demo](https://productivity.ethanbaker.dev?DEMO).
+## Demo
 
-## TODO List
+![Productivity tool interface](./productivity.png)
 
-* Chores list (Click a square to 'cross off' the day for doing the specific chore, can do a half strike, add new chores) (DONE, add ability to delete chore using trash button)
+Currently, only registered users can use this tool. In the meantime, you can check out the demo.
 
-* Daily info (Grateful for, goals, targets, what will make today great, schedule)
+[https://productivity.ethanbaker.dev](https://productivity.ethanbaker.dev?DEMO).
 
-* Calendar scheduling (schedule same event multiple days using shift click, click on specific day to focus and add events, scroll or enter time, etc)
+## Features
 
-* 13 week goals? (DONE-ish)
+Available widgets:
 
+* TODO List
+* Goal List
+* Ambient (Time, weather, etc)
+* Schedule
+* Habit Tracker
+* Motivation (Daily goals, targets, etc)
+
+## Contributing / Suggestions
+
+If you would like to help develop this project, let me know at [mail@ethanbaker.dev](mailto:mail@ethanbaker.dev).
+
+For issues and suggestions, please include as much useful information as possible. Please submit patches as pull requests. 
