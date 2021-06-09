@@ -149,7 +149,7 @@ nav {
 }
 
 .nav-item .home {
-  border: solid 2px var(--text-color);
+  /*border: solid 2px var(--text-color);*/
 }
 
 .nav-item .home:after {
@@ -657,7 +657,7 @@ main #habits {
 
 .habits-info th {
   font-family: Verdana, "Noto Sans",  sans-serif;
-  width: 2.5em;
+  width: 3em;
 }
 
 .habits-info .head {
@@ -668,13 +668,13 @@ main #habits {
 }
 
 .habits-info tr {
-  height: 2.3em;
+  height: 3em;
 }
 
 .habits-info tr .item {
   border: solid 2px var(--line-color);
-  height: 2.3em;
-  width: 2.3em;
+  height: 3em;
+  width: 3em;
   white-space: nowrap;
   font-family: Verdana, "Noto Sans",  sans-serif;
   font-weight: bold;

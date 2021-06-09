@@ -1,44 +1,4 @@
 let session
-/*
-  // Small navigation menu ---------
-
-let wrap = document.querySelector("main")
-let menu = document.querySelector("#small-menu")
-let menuOpen = document.querySelector("#small-nav button.open")
-let menuClose = document.querySelector("#small-menu button.close")
-
-const closeMenu = event => {
-  // Hide the small nav when the menu isn't open
-  menu.style.opacity = "0"
-  menu.style.zIndex = "-1"
-  menuOpen.style.visibility = "visible"
-
-  // Unblur the page
-  wrap.style.filter = "blur(0)"
-}
-
-const openMenu = event => {
-  // Make the menu appear
-  menu.style.opacity = "1"
-  menu.style.zIndex = "999999999999999999"
-  menu.style.display = "flex"
-  menuOpen.style.visibility = "collapse"
-
-  // Blur the page
-  wrap.style.filter = "blur(2px)"
-  menu.style.background = "var(--bg-color)"
-  menu.style.opacity = "0.85"
-}
-
-menuOpen.onclick = openMenu
-menuClose.onclick = closeMenu
-
-// Close the menu when the links are clicked
-let links = document.querySelectorAll("#small-menu .nav-item a")
-for (let v of links) {
-  v.onclick = closeMenu
-}
-*/
 
 /* Used for time keeping */
 class Time {
@@ -106,6 +66,7 @@ class Time {
   static convert24to12(time) {
     let hours = Number(time.split(":")[0])
     let minutes = time.split(":")[1]
+    minutes = (minutes.length == 1 ? "0" : "") + minutes
     let prefix = "AM"
 
     if (hours >= 12) {
@@ -333,7 +294,7 @@ class Todo extends Widget {
     input.onkeypress = e => {
       if (e.key !== "Enter") return
 
-      self.lists[self.index].push(input.value)
+      self.lists[self.index].push(input.value.trim())
 
       input.blur()
 
@@ -552,11 +513,10 @@ class Ambient extends Widget {
     this.setDate()
 
     // Continuously update the time element
-    setInterval(this.setTime(), 1000)
-    this.setTime()
+    setInterval(this.setTime(this), 1000)
 
     // Continuously update the weather element
-    setInterval(this.setWeather(), 900000)
+    setInterval(this.setWeather(this), 900000)
   }
 
   // Set the date of the date element
@@ -565,23 +525,28 @@ class Ambient extends Widget {
   }
 
   // Set the time of the time element
-  setTime() {
-    this.timeElement.innerText = this.time.timeStamp()
+  setTime(self) {
+    return () => {
+      let t = new Date()
+      self.timeElement.innerText = Time.convert24to12(`${t.getHours()}:${t.getMinutes()}`)
+    }
   }
 
-  async setWeather() {
-    if (!session || !session.credentials) return
+  setWeather(self) {
+    return async () => {
+      if (!session || !session.credentials) return
 
-    // Get the position of the user
-    let posRaw = await fetch(`https://api.ipdata.co?api-key=${session.credentials.ip.key}`)
-    let pos = await posRaw.json()
+      // Get the position of the user
+      let posRaw = await fetch(`https://api.ipdata.co?api-key=${session.credentials.ip.key}`)
+      let pos = await posRaw.json()
 
-    // Get the weather data
-    let weatherRaw = await fetch(`https://api.openweathermap.org/data/2.5/weather?zip=${pos.postal}&APPID=${session.credentials.weather.key}`)
-    let weather = await weatherRaw.json()
+      // Get the weather data
+      let weatherRaw = await fetch(`https://api.openweathermap.org/data/2.5/weather?zip=${pos.postal}&APPID=${session.credentials.weather.key}`)
+      let weather = await weatherRaw.json()
 
-    // Update the weather div
-    this.weatherElement.innerHTML = `${Math.floor((weather.main.temp - 273.15) * (9/5) + 32)} °F. ${weather.weather[0].description[0].toUpperCase() + weather.weather[0].description.substring(1)} <br><img src="https://openweathermap.org/img/wn/${weather.weather[0].icon}.png" />`
+      // Update the weather div
+      self.weatherElement.innerHTML = `${Math.floor((weather.main.temp - 273.15) * (9/5) + 32)} °F. ${weather.weather[0].description[0].toUpperCase() + weather.weather[0].description.substring(1)} <br><img src="https://openweathermap.org/img/wn/${weather.weather[0].icon}.png" />`
+    }
   }
 }
 
@@ -933,6 +898,7 @@ class Habit extends Widget {
               this.habits = this.habits.filter(e => {return e.name !== habit.innerText})
 
               tr.remove()
+              this.update()
               return
             }
           }
@@ -973,23 +939,14 @@ class Habit extends Widget {
       tr.appendChild(th)
 
       // Get the start position of the habit's value
-      let date = habit.date
-      let start = 0
-
-      if (habit.value.length > this.dates.length) {
-        while (date[2] < t.stamp[2]) {
-          start += 365+Time.isLeapYear(date[2])
-          date[2]++
-        }
-        while (date[0] < t.stamp[0]) {
-          start += t.dayCounts[date[0]-1]
-          date[0]++
-        }
-        if (date[1] > 14) start += 14
+      let t = new Time()
+      if (t.weekSpan().filter(e => {return e == `${habit.date[0]}/${habit.date[1]}`}).length === 0 || t.stamp[2] !== habit.date[2]) {
+        habit.date = t.stamp
+        habit.value = "_"
       }
 
       for (let i = 0; i < this.dates.length; i++) {
-        if (start > 0) habit.value = habit.value.substring(start)
+        if (!habit.value[i]) habit.value += "_"
 
         // Add a cell to the habit
         let td = document.createElement("TD")
@@ -1009,17 +966,11 @@ class Habit extends Widget {
 
     session.data.habits = []
 
-    let t = new Time()
-    let startDate = [this.dates[0].split("/")[1], t.stamp[0], t.stamp[2]]
-
     let trs = this.tbody.querySelectorAll(".habit")
     for (let i = 0; i < trs.length; i++) {
-      if (Time.compareDates(this.habits[i].date, startDate)) this.habits[i].date = startDate
-
       this.habits[i].value = ""
       for (let td of trs[i].querySelectorAll(".item")) {
         this.habits[i].value += td.innerText === "" ? "_" : td.innerText
-
       }
 
       session.data.habits.push(this.habits[i])
@@ -1075,32 +1026,36 @@ class Session {
 
     xmlGet.open("GET", url)
     xmlGet.send()
+
+    this.getApi()
   }
 
   // Get the data from the api
   getApi() {
+    let self = this
+
     // Initial xml request to see if the user already has data
     let xmlGet = new XMLHttpRequest()
-    let url = "https://api.ethanbaker.dev/" + this.#token
+    let url = "https://api.ethanbaker.dev/productivity/" + this.#token
 
     xmlGet.responseType = "json"
     xmlGet.onload = () => {
-      this.data = xmlGet.response
+      self.data = xmlGet.response
 
       // Create a new user if the current user doesn't exist
       if (!session.data) {
         let xmlPost = new XMLHttpRequest()
         xmlPost.responseType = "json"
         xmlPost.onload = () => {
-          this.data = xmlPost.response
-          this.updateUi()
+          self.data = xmlPost.response
+          self.updateUi()
         }
 
         // Send the xml post request
         xmlPost.open("POST", url)
-        xmlPost.send(TOKEN)
+        xmlPost.send(self.#token)
       } else {
-        this.updateUi()
+        self.updateUi()
       }
     }
 
@@ -1125,7 +1080,7 @@ class Session {
     this.goals.update()
 
     // Set the weather of the ambient widget
-    this.ambient.setWeather()
+    this.ambient.setWeather(this.ambient)()
 
     // Add the user's habit data to the widget
     this.habits.habits = this.data.habits 
@@ -1156,7 +1111,7 @@ class Session {
 
     xml.responseType = "json"
 
-    xml.open("PUT", "https://api.ethanbaker.dev/" + this.#token)
+    xml.open("PUT", "https://api.ethanbaker.dev/productivity/" + this.#token)
     xml.send(JSON.stringify(this.data))
   }
 
@@ -1180,6 +1135,43 @@ class Session {
   }
 }
 
-/* For testing */
-session = new Session("DEMO")
-session.getApi()
+/*
+  // Small navigation menu ---------
+
+let wrap = document.querySelector("main")
+let menu = document.querySelector("#small-menu")
+let menuOpen = document.querySelector("#small-nav button.open")
+let menuClose = document.querySelector("#small-menu button.close")
+
+const closeMenu = event => {
+  // Hide the small nav when the menu isn't open
+  menu.style.opacity = "0"
+  menu.style.zIndex = "-1"
+  menuOpen.style.visibility = "visible"
+
+  // Unblur the page
+  wrap.style.filter = "blur(0)"
+}
+
+const openMenu = event => {
+  // Make the menu appear
+  menu.style.opacity = "1"
+  menu.style.zIndex = "999999999999999999"
+  menu.style.display = "flex"
+  menuOpen.style.visibility = "collapse"
+
+  // Blur the page
+  wrap.style.filter = "blur(2px)"
+  menu.style.background = "var(--bg-color)"
+  menu.style.opacity = "0.85"
+}
+
+menuOpen.onclick = openMenu
+menuClose.onclick = closeMenu
+
+// Close the menu when the links are clicked
+let links = document.querySelectorAll("#small-menu .nav-item a")
+for (let v of links) {
+  v.onclick = closeMenu
+}
+*/
