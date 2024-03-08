@@ -37,11 +37,9 @@ NEED GITHUB WORKFLOW [![Go Coverage](https://github.com/ethanbaker/productivity/
 <!-- PROJECT LOGO -->
 <br><br><br>
 <div align="center">
-  <!--
   <a href="https://github.com/ethanbaker/productivity">
-    <img src="path_to_logo" alt="Logo" width="80" height="80">
+    <img src="./docs/favicon.ico" alt="Logo" width="80" height="80">
   </a>
-  -->
 
   <h3 align="center">Productivity</h3>
 
@@ -115,6 +113,8 @@ You can visit the productivity tool by visiting the demo at [productivity.ethanb
 - [x] Scheduling Widget
 - [x] Motivation Widget
 - [x] CSS Styling
+
+This project is no longer being maintained.
 
 See the [open issues][issues-url] for a full list of proposed features (and known issues).
 
